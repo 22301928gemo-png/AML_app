@@ -78,7 +78,29 @@
 
       const { error } = await supabase
         .from("landowners")
-        .insert([{ name, village }]);
+        .insert([{
+           nid_number,
+          birth_certificate_reg,
+          given_names,
+          family_name,
+          date_of_birth,
+          place_of_birth,
+          gender,
+          province,
+          district,
+          llg,
+          ward,
+          village_town,
+          clan,
+          tribe,
+          mobile_number,
+          education_level,
+          occupation,
+          denomination,
+          marital_status,
+          gps_boundary
+          
+        }]);
 
       if (error) {
         alert("Error: " + error.message);
