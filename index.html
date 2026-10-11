@@ -1,1 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Landowner Intake Form</title>
+</head>
+<body>
+  <h1>Landowner Form</h1>
+  <!--   Form for adding lndowners-->
+  <form id="landowner-form">
+    <input id="name" placeholder="Name" required/>
+    <input id="village" placeholder="Village"/>
+    <button type="submit">Submit</button>
+  </form>
+
+  <!-- Selection to display results-->
+  <div id="output"> Loading...</div>
+  <script type="module">
+     import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+  <form id="landowner-form">
+    // Replace with your Supabase project details
+    const supabaseUrl = 'https://dbppvcfxtbhuuskwyycc.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRicHB2Y2Z4dGJodXVza3d5eWNjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU5MjgzMjMsImV4cCI6MjEwMTUwNDMyM30.xMoJlrlUUZ1Ol4GTR9etCxfT8U6tEgR3ipdRdDS30cc'
+;
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    const form = document.getElementById("landowner-form");
+    const output = document.getElementById("output");
+    
+    //Insert new landowner
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const name = document.getElementById("name").value;
+      const village = document.getElementById("village").value;
+
+      const { error } = await supabase
+        .from("landowners")
+        .insert([{ name, village }]);
+
+      if (error) {
+        alert("Error: " + error.message);
+      } else {
+        alert("Landowner added successfully!");
+        form.reset();
+        loadLandowners(); //refresh list after insert
+      }
+    });
+    //Fetch and display landowners
+    async function loadLandowners(){
+      const {data, error} = await supabase
+      .form("landowners")
+      .select("*");
+
+      if (error){
+        output.textContent = "Error loading data: " + error.message;
+      } else{
+        output.innerHTML= "<h2>Landowners</h2>" +
+          data.map(l=> `<p>${l.name} (${l.village})</p>`).join(" ");
+      }
+    }
+    //Load existing records on page start
+    loadLandowners();
+  </script>
+</body>
+</html>
 
