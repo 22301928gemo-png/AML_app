@@ -1,1 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title> Admin Dashboard</title>
+    <style>
+      body { font-family: Arial, sans-serif; margin: 20px;}
+      .stats{display: flex; gap:20px;}
+      .card{padding: 20px; color:white; border-radius:8px;}
+      .blue{background: #3498db;}
+      .green{background:#2ecc71;}
+      .orange{background:#e67e22;}
+      .red{background:#e74c3c;}
+      table {width:100%; border-collapse: collapse; margin-top:20px;}
+      th, td{border:1px solid #ccc; padding:8px; text-align:left;}
+      th{background:#f4f4f4;}
+      nav {margin-bottom: 20px;}
+      nav a {margin-right: 15px; text-decoration:none; color:#3498db;}
+            </style>
+  </head>
+  <body>
+  <h1>Alluvial Mining Lease Application Portal</h1>
+  <nav>
+    <a href="dashboard.html">Dashboard</a>
+    <a href="index.html">Landowner Page</a>
+  </nav>
 
+  <div class="stats">
+    <div class="card blue">Total Applications: 254</div>
+    <div class="card green">Under Review: 76</div>
+    <div class="card orange">Approved: 132</div>
+    <div class="card red">Rejected: 46</div>
+  </div>
+    <h2>Recent Applications</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Name</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>20/04/2024</td><td>Michael</td><td>Under Review</td></tr>
+      <tr><td>18/04/2024</td><td>Gill</td><td>Rejected</td></tr>
+      <tr><td>17/04/2024</td><td>Ijo</td><td>Rejected</td></tr>
+      <tr><td>17/04/2024</td><td>David</td><td>Approved</td></tr>
+    </tbody>
+  </table>
+</body>
+</html>
+    
