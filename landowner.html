@@ -3,6 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <title>Landowner Intake Form</title>
+  <style>
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    th { background: #f4f4f4; }
+  </style>
 </head>
 <body> 
   <!-- Navigation bar-->
@@ -37,6 +42,35 @@
     
     <button type="submit">Submit</button>
   </form>
+   <!-- Table to display results -->
+  <h2>Landowners</h2>
+  <table id="landowners-table">
+    <thead>
+      <tr>
+        <th>NID</th>
+        <th>Given Names</th>
+        <th>Family Name</th>
+        <th>Date of Birth</th>
+        <th>Place of Birth</th>
+        <th>gender</th>
+        <th>Province</th>
+        <th>District</th>
+        <th>LLG</th>
+        <th>Llg</th>
+        <th>Ward</th>
+        <th>Village/Town</th>
+        <th>Clan</th>
+        <th>Tribe</th>
+        <th>Mobile Number</th>
+        <th>Education Level</th>
+        <th>Occupation</th>
+        <th>Denomination</th>
+        <th>Marital Status</th>
+        <th>gps Boundary</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
 
   <!-- Selection to display results-->
   <div id="output"> Loading...</div>
@@ -51,6 +85,7 @@
 
     const form = document.getElementById("landowner-form");
     const output = document.getElementById("output");
+    const tableBody = document.querySelector("#landowners-table tbody");
     
     //Insert new landowner
     form.addEventListener("submit", async (e) => {
@@ -117,10 +152,31 @@
       .select("*");
 
       if (error){
-        output.textContent = "Error loading data: " + error.message;
+        tableBody.innerHTML = `<tr><td colspan="6">Error: ${error.message}</td></tr>`;
       } else{
-        output.innerHTML= "<h2>Landowners</h2>" +
-          data.map(l=> `<p>${l.name} (${l.village})</p>`).join(" ");
+        tableBody.innerHTML = data.map(l => `
+          <tr>
+            <td>${l.nid_number || ""}</td>
+            <td>${l.given_names || ""}</td>
+            <td>${l.family_name || ""}</td>
+            <td>${l.date_of_birth || ""}</td>
+            <td>${l.place_of_birth || ""}</td>
+            <td>${l.gender || ""}</td>
+            <td>${l.province || ""}</td>
+            <td>${l.district || ""}</td>
+            <td>${l.llg || ""}</td>
+            <td>${l.ward || ""}</td>
+            <td>${l.village_town || ""}</td>
+            <td>${l.clan || ""}</td>
+            <td>${l.tribe || ""}</td>
+            <td>${l.mobile_number || ""}</td>
+            <td>${l.education_level || ""}</td>
+            <td>${l.occupation || ""}</td>
+            <td>${l.denomination || ""}</td>
+            <td>${l.marital_status || ""}</td>
+            <td>${l.gps_boundary || ""}</td>
+          </tr>
+        `).join("");
       }
     }
     //Load existing records on page start
