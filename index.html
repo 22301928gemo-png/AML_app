@@ -4,12 +4,31 @@
   <meta charset="UTF-8">
   <title>Landowner Intake Form</title>
 </head>
-<body>
+<body>el
   <h1>Landowner Form</h1>
   <!--   Form for adding lndowners-->
   <form id="landowner-form">
-    <input id="name" placeholder="Name" required/>
-    <input id="village" placeholder="Village"/>
+    <input id="nid_number" placeholder="NID Number" required/>
+    <input id="birth_certificate_reg" placeholder="Birth Certificate"/>
+    <input id="given_names" placeholder="Given Names"/>
+    <input id="family_name" placeholder="Family Name"/>
+    <input id="date_of_birth" placeholder="Date of Birth"/>
+    <input id="place_of_birth" placeholder="Place of Birth"/>
+    <input id="gender" placeholder="Gender"/>
+    <input id="province" placeholder="Province"/>
+    <input id="district"placeholder="District"/>
+    <input id="llg"placeholder="Llg"/>
+    <input id="ward"placeholder="Ward"/>
+    <input id="village_town"placeholder"village/Town"/>
+    <input id="clan"placeholder"Clan"/>
+    <input id="tribe"placeholder="Tribe"/>
+    <input id="mobile_number"placeholder="Mobile Number"/>
+    <input id="education_level"placeholder="Education Level"/>
+    <input id="occupation"placeholder="Occupation"/>
+    <input id="denomination"placeholder="Denomination"/>
+    <input id="marital_status"placeholder="Marital Status"/>
+    <input id="gps-boundary"placeholder="gps Boundary"/>
+    
     <button type="submit">Submit</button>
   </form>
 
@@ -30,8 +49,26 @@
     //Insert new landowner
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
-      const name = document.getElementById("name").value;
-      const village = document.getElementById("village").value;
+      const nid_number = document.getElementById("nid_number").value;
+      const birth_certificate_reg = document.getElementById("birth_certificate_reg").value;
+      const given_names=document.getElementById("given_names").value;
+      const family_name=document.getElementById("family_name").value;
+      const date_of_birth=document.getElementById("date_of_birth").value;
+      const place_of_birth=document.getElementById("place_of_birth").value;
+      const gender=document.getElementById("gender").value;
+      const province=document.getElementById("province").value;
+      const district=document.getElementById("district").value;
+      const llg=document.getElementById("llg").value;
+      const ward=document.getElementById("ward").value;
+      const village_town=document.getElementById("village_town").value;
+      const clan=document.getElementById("clan").value;
+      const tribe=document.getElementById("tribe").value;
+      const mobile_number=document.getElementById("mobile_number").value;
+      const education_level=document.getElementById("education_level").value;
+      const occupation=document.getElementById("occupation").value;
+      const denomination=document.getElementById("denomination").value;
+      const marital_status=document.getElementById("marital_status").value;
+      const gps_boundary=document.getElementById("gps_boundary").value;
 
       const { error } = await supabase
         .from("landowners")
