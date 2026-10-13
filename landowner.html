@@ -14,6 +14,7 @@
   <nav>
     <a href="dashboard.html">Dashboard</a>
     <a href="index.html">Landowner Page</a>
+    <a href="status.html"> Status</a>
   </nav>
   
   <h1>Landowner Form</h1>
@@ -150,20 +151,17 @@ testConnection();
         }]);
 
       if (error) {
-        alert("Error: " + error.message);
-      } else {
-        alert("Landowner added successfully!");
-        form.reset();
-        loadLandowners(); //refresh list after insert
-      }
-    });
-    if (error) {
     alert("Error: " + error.message);
   } else {
-    alert("Application submitted successfully!");
-    // THIS IS WHERE YOU CHANGE THE REDIRECTION
+    // Save the new record ID to localStorage if available
+    if (data && data.length > 0) {
+      localStorage.setItem("latest_aml_id", data[0].id);
+    }
+    
+    // Redirect directly to your applicant status tracking page
+    window.location.href = "status.html";
   }
-});
+    
     //Fetch and display landowners
     async function loadLandowners(){
       const {data, error} = await supabase
