@@ -73,7 +73,6 @@
   </table>
 
   <!-- Selection to display results-->
-  <div id="output"> Loading...</div>
   <script type="module">
      import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
     // Replace with your Supabase project details
@@ -95,6 +94,7 @@
 
 // Run the test when page loads
 testConnection();
+
 
     const form = document.getElementById("landowner-form");
     const output = document.getElementById("output");
