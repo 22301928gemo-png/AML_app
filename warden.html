@@ -1,246 +1,252 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>MRA Mining Warden Portal & GIS Verification</title>
-  <style>
-    body { font-family: Arial, sans-serif; margin: 20px; background-color: #f9f9f9; }
-    h1, h2 { color: #003366; }
-    nav { margin-bottom: 20px; background: #003366; padding: 10px; border-radius: 4px; }
-    nav a { color: #fff; text-decoration: none; margin-right: 15px; font-weight: bold; }
-    table { width: 100%; border-collapse: collapse; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-    th, td { border: 1px solid #ddd; padding: 10px; text-align: left; font-size: 13px; }
-    th { background: #f0f4f8; color: #333; }
-    .btn-pdf { background-color: #d9534f; color: white; border: none; padding: 6px 10px; cursor: pointer; border-radius: 3px; font-weight: bold; font-size: 12px; }
-    .btn-map { background-color: #0275d8; color: white; border: none; padding: 6px 10px; cursor: pointer; border-radius: 3px; font-weight: bold; font-size: 12px; margin-right: 5px; }
-    .status-badge { padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; display: inline-block; }
-    .status-pending { background: #f0ad4e; color: white; }
-    .status-verified { background: #5cb85c; color: white; }
-    
-    /* Modal styles for GIS Map Viewer */
-    #map-modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); }
-    .modal-content { background: white; margin: 5% auto; padding: 20px; width: 80%; max-width: 800px; border-radius: 6px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); position: relative; }
-    .close-btn { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; }
-    .close-btn:hover { color: black; }
-    #warden-map { height: 400px; width: 100%; margin-top: 15px; border-radius: 4px; border: 1px solid #ccc; }
-    .btn-verify { background-color: #5cb85c; color: white; border: none; padding: 10px 20px; font-size: 14px; font-weight: bold; cursor: pointer; border-radius: 4px; margin-top: 15px; }
-  </style>
+<script type="module">
+  import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
-  <!-- Leaflet CSS & JS for Interactive Maps -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <!-- html2pdf Library for PDF exports -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-</head>
-<body>
+  const supabaseUrl = 'https://dbppvcfxtbhuuskwyycc.supabase.co';
+  const supabaseKey = "sb_publishable_vWNRqdWRDV8el4eWD0rIFg_nB1PxaUI";
+  const supabase = createClient(supabaseUrl, supabaseKey);
 
-  <nav>
-    <a href="warden.html">MRA Warden Dashboard</a>
-    <a href="index.html">Intake Form</a>
-    <a href="#" id="logout-btn">Logout</a>
-  </nav>
+  // Store loaded application data globally for quick lookup
+  let loadedApplications = {};
+  let activeAppId = null;
+  let mapInstance = null;
+  let polygonLayer = null;
 
-  <h1>MRA Mining Warden GIS Verification Portal</h1>
-  <p>Review landowner applications, inspect lease boundaries spatially, and certify MRA compliance.</p>
+  // 🔒 Security check
+  async function checkWardenAuth() {
+    const { data: { session }, error } = await supabase.auth.getSession();
+    if (error || !session) {
+      alert("Access Denied: Please log in as an authorized MRA Mining Warden.");
+      window.location.href = "login.html";
+      return false;
+    }
+    return true;
+  }
 
-  <h2>Submitted Applications</h2>
-  <table id="warden-table">
-    <thead>
-      <tr>
-        <th>ID</th>
-        <th>Applicant</th>
-        <th>Location</th>
-        <th>Clan & Tribe</th>
-        <th>GPS Boundary (WKT)</th>
-        <th>Status</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr><td colspan="7">Loading applications from database...</td></tr>
-    </tbody>
-  </table>
+  // Load applications
+  async function loadWardenData() {
+    const isAuthorized = await checkWardenAuth();
+    if (!isAuthorized) return;
 
-  <!-- GIS Map Inspection Modal -->
-  <div id="map-modal">
-    <div class="modal-content">
-      <span class="close-btn" onclick="closeMapModal()">&times;</span>
-      <h3 id="modal-title">Spatial Boundary Verification</h3>
-      <p id="modal-subtitle" style="font-size: 13px; color: #666;"></p>
-      <div id="warden-map"></div>
-      <button id="verify-action-btn" class="btn-verify" onclick="certifyBoundary()">✅ Verify & Certify Boundary</button>
-    </div>
-  </div>
+    const tableBody = document.querySelector("#warden-table tbody");
 
-  <script type="module">
-    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+    const { data, error } = await supabase
+      .from("landowner")
+      .select("*")
+      .order("id", { ascending: false });
 
-    const supabaseUrl = 'https://dbppvcfxtbhuuskwyycc.supabase.co';
-    const supabaseKey = "sb_publishable_vWNRqdWRDV8el4eWD0rIFg_nB1PxaUI";
-    const supabase = createClient(supabaseUrl, supabaseKey);
-
-    const tableBody = document.querySelector("#warden-table");
-    let activeAppId = null;
-    let mapInstance = null;
-    let polygonLayer = null;
-
-    // Load applications for Warden review
-    async function loadWardenData() {
-      const { data, error } = await supabase
-        .from("landowner")
-        .select("*")
-        .order("id", { ascending: false });
-
-      if (error) {
-        tableBody.innerHTML = `<tr><td colspan="7" style="color:red;">Error: ${error.message}</td></tr>`;
-        return;
-      }
-
-      if (!data || data.length === 0) {
-        tableBody.innerHTML = `<tr><td colspan="7">No applications found.</td></tr>`;
-        return;
-      }
-
-      tableBody.innerHTML = data.map(app => {
-        const status = app.warden_status || "Under Review";
-        const badgeClass = status === "Verified" ? "status-verified" : "status-pending";
-
-        return `
-          <tr>
-            <td><strong>#${app.id}</strong></td>
-            <td>${app.given_names || ""} ${app.family_name || ""}<br/><small>NID: ${app.nid_number || ""}</small></td>
-            <td>${app.province || ""}, ${app.district || ""}<br/><small>${app.village_town || ""}</small></td>
-            <td>${app.clan || "N/A"}<br/><small>(${app.tribe || "N/A"})</small></td>
-            <td style="font-family: monospace; font-size:11px; max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${app.gps_boundary || ''}">
-              ${app.gps_boundary || "N/A"}
-            </td>
-            <td><span class="status-badge ${badgeClass}">${status}</span></td>
-            <td>
-              <button class="btn-map" onclick="openVerificationMap(${app.id}, '${app.given_names || ''}', '${app.family_name || ''}', '${app.gps_boundary || ''}')">
-                🗺️ Verify Map
-              </button>
-              <button class="btn-pdf" onclick="generatePDF('${app.id}', '${app.given_names || ''}', '${app.family_name || ''}', '${app.nid_number || ''}', '${app.province || ''}', '${app.district || ''}', '${app.clan || ''}', \`${app.gps_boundary || ''}\`)">
-                📄 PDF
-              </button>
-            </td>
-          </tr>
-        `;
-      }).join("");
+    if (error) {
+      tableBody.innerHTML = `<tr><td colspan="7" style="color:red;">Error loading records: ${error.message}</td></tr>`;
+      return;
     }
 
-    // Open Modal and Render Leaflet Map
-    window.openVerificationMap = function(id, given, family, wkt) {
-      activeAppId = id;
-      document.getElementById("map-modal").style.display = "block";
-      document.getElementById("modal-title").textContent = `Boundary Verification: #${id} - ${given} ${family}`;
-      document.getElementById("modal-subtitle").textContent = `WKT Data: ${wkt}`;
+    if (!data || data.length === 0) {
+      tableBody.innerHTML = `<tr><td colspan="7">No applications found.</td></tr>`;
+      return;
+    }
 
-      // Initialize Leaflet map if not already created
-      setTimeout(() => {
-        if (!mapInstance) {
-          mapInstance = L.map('warden-map').setView([-6.95, 146.65], 13);
-          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19,
-            attribution: '© OpenStreetMap contributors'
-          }).addTo(mapInstance);
-        } else {
-          mapInstance.invalidateSize();
-        }
+    // Cache applications by ID
+    loadedApplications = {};
+    data.forEach(app => { loadedApplications[app.id] = app; });
 
-        // Clear previous polygon layer
-        if (polygonLayer) {
-          mapInstance.removeLayer(polygonLayer);
-        }
+    tableBody.innerHTML = data.map(app => {
+      const status = app.warden_status || "Under Review";
+      const badgeClass = status === "Verified" ? "status-verified" : "status-pending";
 
-        try {
-          // Parse WKT POLYGON((lng lat, lng lat, ...)) into Leaflet LatLng format
-          const coordsMatch = wkt.match(/\(\(([^)]+)\)\)/);
+      // Display format for boundary string
+      let displayWkt = "N/A";
+      if (typeof app.gps_boundary === 'string') {
+        displayWkt = app.gps_boundary;
+      } else if (app.gps_boundary && typeof app.gps_boundary === 'object') {
+        displayWkt = JSON.stringify(app.gps_boundary);
+      }
+
+      return `
+        <tr>
+          <td><strong>#${app.id}</strong></td>
+          <td>${app.given_names || ""} ${app.family_name || ""}<br/><small>NID: ${app.nid_number || ""}</small></td>
+          <td>${app.province || ""}, ${app.district || ""}<br/><small>${app.village_town || ""}</small></td>
+          <td>${app.clan || "N/A"}<br/><small>(${app.tribe || "N/A"})</small></td>
+          <td style="font-family: monospace; font-size:11px; max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${displayWkt}">
+            ${displayWkt}
+          </td>
+          <td><span class="status-badge ${badgeClass}">${status}</span></td>
+          <td>
+            <button class="btn-map" data-id="${app.id}">🗺️ Verify Map</button>
+            <button class="btn-pdf" data-id="${app.id}">📄 PDF</button>
+          </td>
+        </tr>
+      `;
+    }).join("");
+
+    // Attach event listeners safely without inline string parsing issues
+    document.querySelectorAll(".btn-map").forEach(btn => {
+      btn.addEventListener("click", (e) => {
+        const id = e.target.getAttribute("data-id");
+        openVerificationMap(id);
+      });
+    });
+
+    document.querySelectorAll(".btn-pdf").forEach(btn => {
+      btn.addEventListener("click", (e) => {
+        const id = e.target.getAttribute("data-id");
+        generatePDF(id);
+      });
+    });
+  }
+
+  // Open Modal and safely extract boundary geometry
+  function openVerificationMap(id) {
+    const app = loadedApplications[id];
+    if (!app) return;
+
+    activeAppId = id;
+    document.getElementById("map-modal").style.display = "block";
+    document.getElementById("modal-title").textContent = `Boundary Verification: #${app.id} - ${app.given_names || ''} ${app.family_name || ''}`;
+
+    // Extract raw string geometry or handle object representations
+    let wktString = "";
+    if (typeof app.gps_boundary === 'string') {
+      wktString = app.gps_boundary;
+    } else if (app.gps_boundary && typeof app.gps_boundary === 'object') {
+      // Handle cases where PostGIS/Supabase returns GeoJSON or parsed objects
+      if (app.gps_boundary.coordinates) {
+        // Convert GeoJSON coordinates back to Leaflet LatLngs
+        const rawCoords = app.gps_boundary.coordinates[0] || [];
+        var latLngs = rawCoords.map(pt => [pt[1], pt[0]]);
+        wktString = `POLYGON parsed from GeoJSON (${latLngs.length} points)`;
+      } else {
+        wktString = JSON.stringify(app.gps_boundary);
+      }
+    }
+
+    document.getElementById("modal-subtitle").textContent = `WKT Data: ${wktString}`;
+
+    setTimeout(() => {
+      if (!mapInstance) {
+        mapInstance = L.map('warden-map').setView([-6.95, 146.65], 13);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          maxZoom: 19,
+          attribution: '© OpenStreetMap contributors'
+        }).addTo(mapInstance);
+      } else {
+        mapInstance.invalidateSize();
+      }
+
+      if (polygonLayer) {
+        mapInstance.removeLayer(polygonLayer);
+      }
+
+      try {
+        let latLngs = [];
+
+        // 1. If we already extracted GeoJSON latLngs above
+        if (app.gps_boundary && typeof app.gps_boundary === 'object' && app.gps_boundary.coordinates) {
+          const rawCoords = app.gps_boundary.coordinates[0] || [];
+          latLngs = rawCoords.map(pt => [pt[1], pt[0]]);
+        } 
+        // 2. Parse raw WKT POLYGON((lng lat, lng lat, ...)) string
+        else if (typeof wktString === 'string' && wktString.includes('((')) {
+          const coordsMatch = wktString.match(/\(\(([^)]+)\)\)/);
           if (coordsMatch && coordsMatch[1]) {
             const pairs = coordsMatch[1].split(',');
-            const latLngs = pairs.map(pair => {
+            latLngs = pairs.map(pair => {
               const parts = pair.trim().split(/\s+/);
-              return [parseFloat(parts[1]), parseFloat(parts[0])] // Leaflet expects [lat, lng]
+              return [parseFloat(parts[1]), parseFloat(parts[0])]; // [lat, lng]
             });
-
-            polygonLayer = L.polygon(latLngs, { color: '#d9534f', fillColor: '#f0ad4e', fillOpacity: 0.5 }).addTo(mapInstance);
-            mapInstance.fitBounds(polygonLayer.getBounds());
-          } else {
-            alert("Could not parse WKT polygon geometry for map rendering.");
           }
-        } catch (err) {
-          console.error("Mapping error:", err);
         }
-      }, 200);
-    };
 
-    window.closeMapModal = function() {
-      document.getElementById("map-modal").style.display = "none";
-    };
-
-    // Certify / Verify boundary status in Supabase
-    window.certifyBoundary = async function() {
-      if (!activeAppId) return;
-
-      const { error } = await supabase
-        .from("landowner")
-        .update({ warden_status: "Verified" })
-        .eq("id", activeAppId);
-
-      if (error) {
-        alert("Failed to update status: " + error.message);
-      } else {
-        alert("Boundary successfully verified and certified by MRA Warden!");
-        closeMapModal();
-        loadWardenData(); // Refresh list
+        if (latLngs.length > 0) {
+          polygonLayer = L.polygon(latLngs, { color: '#d9534f', fillColor: '#f0ad4e', fillOpacity: 0.5 }).addTo(mapInstance);
+          mapInstance.fitBounds(polygonLayer.getBounds());
+        } else {
+          alert("Could not extract coordinate points from the boundary field.");
+        }
+      } catch (err) {
+        console.error("Mapping error:", err);
+        alert("Mapping Error: " + err.message);
       }
-    };
+    }, 200);
+  }
 
-    // PDF Generator function
-    window.generatePDF = function(id, given, family, nid, province, district, clan, gps) {
-      const pdfContainer = document.createElement("div");
-      pdfContainer.style.padding = "20px";
-      pdfContainer.style.fontFamily = "Arial, sans-serif";
+  window.closeMapModal = function() {
+    document.getElementById("map-modal").style.display = "none";
+  };
+
+  // Certify / Verify boundary status
+  window.certifyBoundary = async function() {
+    if (!activeAppId) return;
+
+    const { error } = await supabase
+      .from("landowner")
+      .update({ warden_status: "Verified" })
+      .eq("id", activeAppId);
+
+    if (error) {
+      alert("Failed to update status: " + error.message);
+    } else {
+      alert("Boundary successfully verified and certified by MRA Warden!");
+      closeMapModal();
+      loadWardenData();
+    }
+  };
+
+  // PDF Generator
+  function generatePDF(id) {
+    const app = loadedApplications[id];
+    if (!app) return;
+
+    const pdfContainer = document.createElement("div");
+    pdfContainer.style.padding = "20px";
+    pdfContainer.style.fontFamily = "Arial, sans-serif";
+    
+    let boundaryText = typeof app.gps_boundary === 'object' ? JSON.stringify(app.gps_boundary) : (app.gps_boundary || 'N/A');
+
+    pdfContainer.innerHTML = `
+      <div style="text-align: center; border-bottom: 2px solid #003366; padding-bottom: 10px;">
+        <h2 style="color: #003366; margin: 0;">MINERAL RESOURCES AUTHORITY</h2>
+        <h3 style="margin: 5px 0;">Alluvial Mining Lease (AML) Official Application</h3>
+        <p style="font-size: 12px; margin: 0;">Statutory Mining Warden Verification Record</p>
+      </div>
       
-      pdfContainer.innerHTML = `
-        <div style="text-align: center; border-bottom: 2px solid #003366; padding-bottom: 10px;">
-          <h2 style="color: #003366; margin: 0;">MINERAL RESOURCES AUTHORITY</h2>
-          <h3 style="margin: 5px 0;">Alluvial Mining Lease (AML) Official Application</h3>
-          <p style="font-size: 12px; margin: 0;">Statutory Mining Warden Verification Record</p>
-        </div>
-        
-        <br/>
-        <p><strong>Application Reference ID:</strong> AML-${id}</p>
-        <p><strong>Verification Date:</strong> ${new Date().toLocaleDateString()}</p>
-        
-        <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
-          <tr><td style="padding: 8px; border: 1px solid #ccc; font-weight: bold; width: 40%;">Applicant Name:</td><td style="padding: 8px; border: 1px solid #ccc;">${given} ${family}</td></tr>
-          <tr><td style="padding: 8px; border: 1px solid #ccc; font-weight: bold;">National Identity (NID):</td><td style="padding: 8px; border: 1px solid #ccc;">${nid}</td></tr>
-          <tr><td style="padding: 8px; border: 1px solid #ccc; font-weight: bold;">Location:</td><td style="padding: 8px; border: 1px solid #ccc;">${province} / ${district}</td></tr>
-          <tr><td style="padding: 8px; border: 1px solid #ccc; font-weight: bold;">Customary Clan:</td><td style="padding: 8px; border: 1px solid #ccc;">${clan}</td></tr>
-          <tr><td style="padding: 8px; border: 1px solid #ccc; font-weight: bold;">Verified GPS Boundary:</td><td style="padding: 8px; border: 1px solid #ccc; font-family: monospace; font-size: 11px;">${gps}</td></tr>
-        </table>
-        
+      <br/>
+      <p><strong>Application Reference ID:</strong> AML-${app.id}</p>
+      <p><strong>Verification Date:</strong> ${new Date().toLocaleDateString()}</p>
+      
+      <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
+        <tr><td style="padding: 8px; border: 1px solid #ccc; font-weight: bold; width: 40%;">Applicant Name:</td><td style="padding: 8px; border: 1px solid #ccc;">${app.given_names || ''} ${app.family_name || ''}</td></tr>
+        <tr><td style="padding: 8px; border: 1px solid #ccc; font-weight: bold;">National Identity (NID):</td><td style="padding: 8px; border: 1px solid #ccc;">${app.nid_number || 'N/A'}</td></tr>
+        <tr><td style="padding: 8px; border: 1px solid #ccc; font-weight: bold;">Location:</td><td style="padding: 8px; border: 1px solid #ccc;">${app.province || ''} / ${app.district || ''}</td></tr>
+        <tr><td style="padding: 8px; border: 1px solid #ccc; font-weight: bold;">Customary Clan:</td><td style="padding: 8px; border: 1px solid #ccc;">${app.clan || 'N/A'}</td></tr>
+        <tr><td style="padding: 8px; border: 1px solid #ccc; font-weight: bold;">Verified GPS Boundary:</td><td style="padding: 8px; border: 1px solid #ccc; font-family: monospace; font-size: 11px;">${boundaryText}</td></tr>
+      </table>
+      
+      <br/><br/>
+      <div style="margin-top: 20px; border-top: 1px dashed #666; padding-top: 10px;">
+        <p><strong>MRA Warden Certification:</strong> <span style="color: green; font-weight: bold;">${app.warden_status || 'Under Review'}</span></p>
         <br/><br/>
-        <div style="margin-top: 20px; border-top: 1px dashed #666; padding-top: 10px;">
-          <p><strong>MRA Warden Certification:</strong> <span style="color: green; font-weight: bold;">VERIFIED & APPROVED</span></p>
-          <br/><br/>
-          <p>Warden Signature: ___________________________ &nbsp;&nbsp;&nbsp;&nbsp; Date: ______________</p>
-        </div>
-      `;
+        <p>Warden Signature: ___________________________ &nbsp;&nbsp;&nbsp;&nbsp; Date: ______________</p>
+      </div>
+    `;
 
-      const options = {
-        margin:       10,
-        filename:     `AML_Verified_Application_#${id}.pdf`,
-        image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2 },
-        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-      };
-
-      html2pdf().set(options).from(pdfContainer).save();
+    const options = {
+      margin:       10,
+      filename:     `AML_Verified_Application_#${app.id}.pdf`,
+      image:        { type: 'jpeg', quality: 0.98 },
+      html2canvas:  { scale: 2 },
+      jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
 
-    // Load table on start
-    loadWardenData();
-  </script>
-</body>
-</html>
+    html2pdf().set(options).from(pdfContainer).save();
+  }
+
+  // Logout
+  document.getElementById("logout-btn").addEventListener("click", async (e) => {
+    e.preventDefault();
+    await supabase.auth.signOut();
+    window.location.href = "login.html";
+  });
+
+  // Init
+  loadWardenData();
+</script>
