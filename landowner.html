@@ -38,7 +38,7 @@
     <input id="occupation"placeholder="Occupation"/>
     <input id="denomination"placeholder="Denomination"/>
     <input id="marital_status"placeholder="Marital Status"/>
-    <input id="gps-boundary"placeholder="gps Boundary"/>
+    <input id="gps_boundary"placeholder="gps Boundary"/>
     
     <button type="submit">Submit</button>
   </form>
@@ -78,7 +78,7 @@
      import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
     // Replace with your Supabase project details
     const supabaseUrl = 'https://dbppvcfxtbhuuskwyycc.supabase.co';
-    const supabaseKey = sb_publishable_vWNRqdWRDV8el4eWD0rIFg_nB1PxaUI;
+    const supabaseKey = "sb_publishable_vWNRqdWRDV8el4eWD0rIFg_nB1PxaUI";
     const supabase = createClient(supabaseUrl, supabaseKey);
     //Test connections
     async function testConnection() {
@@ -161,7 +161,7 @@ testConnection();
     //Fetch and display landowners
     async function loadLandowners(){
       const {data, error} = await supabase
-      .form("landowners")
+      .from("landowners")
       .select("*");
 
       if (error){
