@@ -82,7 +82,7 @@
     //Test connections
     async function testConnection() {
   const { data, error } = await supabase
-    .from("landowners")
+    .from("landowner")
     .select("*");
 
   if (error) {
@@ -94,13 +94,10 @@
 
 // Run the test when page loads
 testConnection();
-  </script>
-  <script type = module>
-
 
     const form = document.getElementById("landowner-form");
     const output = document.getElementById("output");
-    const tableBody = document.querySelector("#landowners-table tbody");
+    const tableBody = document.querySelector("#landowner-table tbody");
     
     //Insert new landowner
     form.addEventListener("submit", async (e) => {
@@ -127,7 +124,7 @@ testConnection();
       const gps_boundary=document.getElementById("gps_boundary").value;
 
       const { error } = await supabase
-        .from("landowners")
+        .from("landowner")
         .insert([{
            nid_number,
           birth_certificate_reg,
@@ -163,7 +160,7 @@ testConnection();
     //Fetch and display landowners
     async function loadLandowners(){
       const {data, error} = await supabase
-      .from("landowners")
+      .from("landowner")
       .select("*");
 
       if (error){
