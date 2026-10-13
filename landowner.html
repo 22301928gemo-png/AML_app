@@ -81,6 +81,21 @@
     const supabaseUrl = 'https://dbppvcfxtbhuuskwyycc.supabase.co';
     const supabaseKey = sb_publishable_vWNRqdWRDV8el4eWD0rIFg_nB1PxaUI;
     const supabase = createClient(supabaseUrl, supabaseKey);
+    //Test connections
+    async function testConnection() {
+  const { data, error } = await supabase
+    .from("landowners")
+    .select("*");
+
+  if (error) {
+    console.error("❌ Supabase error:", error.message);
+  } else {
+    console.log("✅ Supabase connected. Rows:", data);
+  }
+}
+
+// Run the test when page loads
+testConnection();
 
     const form = document.getElementById("landowner-form");
     const output = document.getElementById("output");
