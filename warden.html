@@ -163,7 +163,7 @@
       });
     }
 
-    // Open Modal and Render Leaflet Map
+  // Open Modal and Render Leaflet Map
     function openVerificationMap(id) {
       const app = loadedApplications[id];
       if (!app) return;
@@ -172,63 +172,63 @@
       document.getElementById("map-modal").style.display = "block";
       document.getElementById("modal-title").textContent = `Boundary Verification: #${app.id} - ${app.given_names || ''} ${app.family_name || ''}`;
 
-      let wktString = "";
-      if (typeof app.gps_boundary === 'string') {
-        wktString = app.gps_boundary;
-      } else if (app.gps_boundary && typeof app.gps_boundary === 'object') {
-        if (app.gps_boundary.coordinates) {
-          wktString = `POLYGON parsed from GeoJSON`;
-        } else {
-          wktString = JSON.stringify(app.gps_boundary);
-        }
-      }
+      let latLngs = [];
+      let displayInfo = "N/A";
 
-      document.getElementById("modal-subtitle").textContent = `WKT Data: ${wktString}`;
-
-      setTimeout(() => {
-        if (!mapInstance) {
-          mapInstance = L.map('warden-map').setView([-6.95, 146.65], 13);
-          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19,
-            attribution: '© OpenStreetMap contributors'
-          }).addTo(mapInstance);
-        } else {
-          mapInstance.invalidateSize();
-        }
-
-        if (polygonLayer) {
-          mapInstance.removeLayer(polygonLayer);
-        }
-
-        try {
-          let latLngs = [];
-
-          if (app.gps_boundary && typeof app.gps_boundary === 'object' && app.gps_boundary.coordinates) {
-            const rawCoords = app.gps_boundary.coordinates[0] || [];
-            latLngs = rawCoords.map(pt => [pt[1], pt[0]]);
-          } else if (typeof wktString === 'string' && wktString.includes('((')) {
-            const coordsMatch = wktString.match(/\(\(([^)]+)\)\)/);
+      try {
+        let boundaryData = app.gps_boundary;
+        
+        if (typeof boundaryData === 'string') {
+          displayInfo = boundaryData;
+          if (boundaryData.includes('((')) {
+            const coordsMatch = boundaryData.match(/\(\(([^)]+)\)\)/);
             if (coordsMatch && coordsMatch[1]) {
               const pairs = coordsMatch[1].split(',');
               latLngs = pairs.map(pair => {
                 const parts = pair.trim().split(/\s+/);
-                return [parseFloat(parts[1]), parseFloat(parts[0])];
+                return [parseFloat(parts[1]), parseFloat(parts[0])]; // [lat, lng]
               });
             }
+          }
+        } else if (boundaryData && typeof boundaryData === 'object') {
+          displayInfo = JSON.stringify(boundaryData);
+          let coords = boundaryData.coordinates || (boundaryData.geometry && boundaryData.geometry.coordinates);
+          if (coords && coords[0]) {
+            latLngs = coords[0].map(pt => [pt[1], pt[0]]); // GeoJSON [lng, lat] to Leaflet [lat, lng]
+          }
+        }
+
+        document.getElementById("modal-subtitle").textContent = `Boundary Data: ${displayInfo}`;
+
+        setTimeout(() => {
+          if (!mapInstance) {
+            mapInstance = L.map('warden-map').setView([-6.95, 146.65], 13);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+              maxZoom: 19,
+              attribution: '© OpenStreetMap contributors'
+            }).addTo(mapInstance);
+          } else {
+            mapInstance.invalidateSize();
+          }
+
+          if (polygonLayer) {
+            mapInstance.removeLayer(polygonLayer);
           }
 
           if (latLngs.length > 0) {
             polygonLayer = L.polygon(latLngs, { color: '#d9534f', fillColor: '#f0ad4e', fillOpacity: 0.5 }).addTo(mapInstance);
             mapInstance.fitBounds(polygonLayer.getBounds());
           } else {
-            alert("Could not parse WKT polygon geometry for map rendering.");
+            alert("Could not parse coordinates for map rendering.");
           }
-        } catch (err) {
-          console.error("Mapping error:", err);
-          alert("Mapping Error: " + err.message);
-        }
-      }, 200);
+        }, 200);
+
+      } catch (err) {
+        console.error("Mapping error:", err);
+        alert("Mapping Error: " + err.message);
+      }
     }
+  
 
     window.closeMapModal = function() {
       document.getElementById("map-modal").style.display = "none";
