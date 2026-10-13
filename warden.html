@@ -116,7 +116,7 @@
             </td>
             <td><span class="status-badge ${badgeClass}">${status}</span></td>
             <td>
-              <button class="btn-map" onclick="openVerificationMap(${app.id}, '${app.given_names || ''}', '${app.family_name || ''}', \`${app.gps_boundary || ''}\`)">
+              <button class="btn-map" onclick="openVerificationMap(${app.id}, '${app.given_names || ''}', '${app.family_name || ''}', '${app.gps_boundary || ''}')">
                 🗺️ Verify Map
               </button>
               <button class="btn-pdf" onclick="generatePDF('${app.id}', '${app.given_names || ''}', '${app.family_name || ''}', '${app.nid_number || ''}', '${app.province || ''}', '${app.district || ''}', '${app.clan || ''}', \`${app.gps_boundary || ''}\`)">
