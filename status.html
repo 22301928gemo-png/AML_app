@@ -1,1 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Application Status - Alluvial Mining Lease Portal</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .status-card {
+      max-width: 600px;
+      margin: 50px auto;
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+      text-align: center;
+    }
+    .status-badge {
+      display: inline-block;
+      background-color: #f39c12;
+      color: white;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-weight: bold;
+      font-size: 14px;
+      margin: 15px 0;
+    }
+    .details-box {
+      text-align: left;
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 6px;
+      margin-top: 20px;
+      font-size: 14px;
+    }
+    .details-box p { margin-bottom: 8px; }
+  </style>
+</head>
+<body>
 
+  <!-- Top Header Bar -->
+  <header>
+    <h1>Alluvial Mining Lease Application Portal</h1>
+    <div class="header-tag">MRA PNG</div>
+  </header>
+
+  <div class="status-card">
+    <h2>Application Submission Successful!</h2>
+    <div class="status-badge" id="status-display">Status: Pending / Under Review</div>
+    <p style="color: #6c757d; font-size: 14px;">Your Alluvial Mining Lease application has been securely logged and forwarded to the MRA Warden registry for initial statutory compliance and boundary checks.</p>
+
+    <div class="details-box" id="app-details">
+      <p><strong>Application ID:</strong> <span id="lbl-id">Loading...</span></p>
+      <p><strong>Applicant Name:</strong> <span id="lbl-name">Loading...</span></p>
+      <p><strong>Submitted Date:</strong> <span id="lbl-date">Loading...</span></p>
+      <p><strong>Next Statutory Step:</strong> Preliminary 5-hectare spatial check & Warden's Hearing scheduling.</p>
+    </div>
+
+    <div style="margin-top: 25px;">
+      <a href="landowner.html" style="text-decoration: none; color: #3b5998; font-weight: bold; font-size: 14px;">← Submit Another Application</a>
+    </div>
+  </div>
+
+  <script type="module">
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+
+    const supabaseUrl = 'https://dbppvcfxtbhuuskwyycc.supabase.co';
+    const supabaseKey = "sb_publishable_vWNRqdWRDV8el4eWD0rIFg_nB1PxaUI";
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    async function fetchLatestStatus() {
+      // Retrieve the last saved application ID from localStorage
+      const appId = localStorage.getItem("latest_aml_id");
+      
+      if (!appId) {
+        document.getElementById("app-details").innerHTML = "<p>No recent application found in this session session storage.</p>";
+        return;
+      }
+
+      // Query Supabase for the specific landowner record
+      const { data, error } = await supabase
+        .from("landowners")
+        .select("*")
+        .eq("id", appId)
+        .single();
+
+      if (error || !data) {
+        document.getElementById("lbl-id").textContent = appId;
+        document.getElementById("lbl-name").textContent = "Record retrieved from session cache";
+        document.getElementById("lbl-date").textContent = new Date().toLocaleDateString();
+        return;
+      }
+
+      // Populate view elements with live database info
+      document.getElementById("lbl-id").textContent = data.id;
+      document.getElementById("lbl-name").textContent = data.given_names || "Customary Landowner Applicant";
+      document.getElementById("lbl-date").textContent = new Date(data.created_at).toLocaleDateString();
+    }
+
+    fetchLatestStatus();
+  </script>
+</body>
+</html>
