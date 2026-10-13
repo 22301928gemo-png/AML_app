@@ -2,76 +2,329 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Landowner Intake Form</title>
+  <title>MRA Landowner Application Portal</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
-    th { background: #f4f4f4; }
+    :root {
+      --primary: #003366;
+      --primary-dark: #002244;
+      --accent: #f0ad4e;
+      --success: #5cb85c;
+      --bg-color: #f4f7f6;
+      --card-bg: #ffffff;
+      --text-main: #333333;
+      --text-muted: #666666;
+      --border: #cccccc;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      margin: 0;
+      padding: 0;
+    }
+
+    /* Top Navigation Bar */
+    header {
+      background-color: var(--primary);
+      color: white;
+      padding: 15px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .logo-area h2 {
+      margin: 0;
+      font-size: 20px;
+      letter-spacing: 0.5px;
+    }
+
+    nav a {
+      color: white;
+      text-decoration: none;
+      margin-left: 20px;
+      font-weight: 600;
+      font-size: 14px;
+      transition: color 0.2s;
+    }
+
+    nav a:hover, nav a.active {
+      color: var(--accent);
+    }
+
+    /* Main Container */
+    .container {
+      max-width: 1100px;
+      margin: 30px auto;
+      padding: 0 20px;
+    }
+
+    /* Form Card Styling */
+    .form-card {
+      background: var(--card-bg);
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      margin-bottom: 40px;
+    }
+
+    .form-card h3 {
+      color: var(--primary);
+      margin-top: 0;
+      margin-bottom: 20px;
+      border-bottom: 2px solid #eaeaea;
+      padding-bottom: 10px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 15px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .form-group label {
+      font-size: 12px;
+      font-weight: bold;
+      color: var(--text-muted);
+      margin-bottom: 5px;
+      text-transform: uppercase;
+    }
+
+    .form-group input, .form-group select {
+      padding: 10px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .form-group input:focus, .form-group select:focus {
+      border-color: var(--primary);
+    }
+
+    .form-group.full-width {
+      grid-column: 1 / -1;
+    }
+
+    .btn-submit {
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      padding: 12px 25px;
+      font-size: 15px;
+      font-weight: bold;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-top: 20px;
+      transition: background 0.2s;
+    }
+
+    .btn-submit:hover {
+      background-color: var(--primary-dark);
+    }
+
+    /* Applications Table Section */
+    .table-card {
+      background: var(--card-bg);
+      padding: 25px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      overflow-x: auto;
+    }
+
+    .table-card h3 {
+      color: var(--primary);
+      margin-top: 0;
+      margin-bottom: 15px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 13px;
+    }
+
+    th, td {
+      padding: 12px 15px;
+      border-bottom: 1px solid #eeeeee;
+    }
+
+    th {
+      background-color: #f8fafc;
+      color: #333333;
+      font-weight: 700;
+      text-transform: uppercase;
+      font-size: 11px;
+      letter-spacing: 0.5px;
+    }
+
+    tr:hover {
+      background-color: #f9fbfd;
+    }
+
+    .status-badge {
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: bold;
+      display: inline-block;
+    }
+
+    .status-pending { background: #fef3c7; color: #d97706; }
+    .status-verified { background: #d1fae5; color: #059669; }
+
+    #form-message {
+      margin-top: 15px;
+      font-weight: bold;
+      font-size: 14px;
+    }
   </style>
 </head>
-<body> 
-  <!-- Navigation bar-->
-  <nav>
-    <a href="dashboard.html">Dashboard</a>
-    <a href="index.html">Landowner Page</a>
-    <a href="status.html">Status</a>
-  </nav>
-  
-  <h1>Landowner Form</h1>
-  <!-- Form for adding landowners-->
-  <form id="landowner-form">
-    <input id="nid_number" placeholder="NID Number" required/>
-    <input id="birth_certificate_reg" placeholder="Birth Certificate"/>
-    <input id="given_names" placeholder="Given Names"/>
-    <input id="family_name" placeholder="Family Name"/>
-    <input id="date_of_birth" placeholder="Date of Birth"/>
-    <input id="place_of_birth" placeholder="Place of Birth"/>
-    <input id="gender" placeholder="Gender"/>
-    <input id="province" placeholder="Province"/>
-    <input id="district" placeholder="District"/>
-    <input id="llg" placeholder="Llg"/>
-    <input id="ward" placeholder="Ward"/>
-    <input id="village_town" placeholder="village/Town"/>
-    <input id="clan" placeholder="Clan"/>
-    <input id="tribe" placeholder="Tribe"/>
-    <input id="mobile_number" placeholder="Mobile Number"/>
-    <input id="education_level" placeholder="Education Level"/>
-    <input id="occupation" placeholder="Occupation"/>
-    <input id="denomination" placeholder="Denomination"/>
-    <input id="marital_status" placeholder="Marital Status"/>
-    <input id="gps_boundary" placeholder="gps Boundary"/>
-    
-    <button type="submit">Submit</button>
-  </form>
+<body>
 
-  <!-- Table to display results -->
-  <h2>Landowners</h2>
-  <table id="landowners-table">
-    <thead>
-      <tr>
-        <th>NID</th>
-        <th>Given Names</th>
-        <th>Family Name</th>
-        <th>Date of Birth</th>
-        <th>Place of Birth</th>
-        <th>Gender</th>
-        <th>Province</th>
-        <th>District</th>
-        <th>LLG</th>
-        <th>Ward</th>
-        <th>Village/Town</th>
-        <th>Clan</th>
-        <th>Tribe</th>
-        <th>Mobile Number</th>
-        <th>Education Level</th>
-        <th>Occupation</th>
-        <th>Denomination</th>
-        <th>Marital Status</th>
-        <th>GPS Boundary</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+  <!-- Top Navigation -->
+  <header>
+    <div class="logo-area">
+      <h2>MRA Landowner Portal</h2>
+    </div>
+    <nav>
+      <a href="landowner.html" class="active">Intake Form</a>
+      <a href="warden.html">Warden Portal</a>
+    </nav>
+  </header>
+
+  <div class="container">
+
+    <!-- Landowner Intake Form Card -->
+    <div class="form-card">
+      <h3>Submit New Alluvial Mining Lease Application</h3>
+      <form id="landowner-form">
+        <div class="form-grid">
+          <div class="form-group">
+            <label>NID Number</label>
+            <input type="text" id="nid_number" placeholder="e.g. 12345678" required />
+          </div>
+          <div class="form-group">
+            <label>Birth Certificate No.</label>
+            <input type="text" id="birth_certificate" placeholder="Optional" />
+          </div>
+          <div class="form-group">
+            <label>Given Names</label>
+            <input type="text" id="given_names" placeholder="First & middle names" required />
+          </div>
+          <div class="form-group">
+            <label>Family Name</label>
+            <input type="text" id="family_name" placeholder="Last name" required />
+          </div>
+          <div class="form-group">
+            <label>Date of Birth</label>
+            <input type="date" id="date_of_birth" required />
+          </div>
+          <div class="form-group">
+            <label>Place of Birth</label>
+            <input type="text" id="place_of_birth" placeholder="Hospital / Town" />
+          </div>
+          <div class="form-group">
+            <label>Gender</label>
+            <select id="gender">
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Province</label>
+            <input type="text" id="province" placeholder="e.g. Morobe" required />
+          </div>
+          <div class="form-group">
+            <label>District</label>
+            <input type="text" id="district" placeholder="e.g. Bulolo" required />
+          </div>
+          <div class="form-group">
+            <label>LLG</label>
+            <input type="text" id="llg" placeholder="Local Level Government" />
+          </div>
+          <div class="form-group">
+            <label>Ward</label>
+            <input type="text" id="ward" placeholder="Ward number" />
+          </div>
+          <div class="form-group">
+            <label>Village / Town</label>
+            <input type="text" id="village_town" placeholder="Village name" />
+          </div>
+          <div class="form-group">
+            <label>Customary Clan</label>
+            <input type="text" id="clan" placeholder="Clan name" />
+          </div>
+          <div class="form-group">
+            <label>Tribe</label>
+            <input type="text" id="tribe" placeholder="Tribe name" />
+          </div>
+          <div class="form-group">
+            <label>Mobile Number</label>
+            <input type="text" id="mobile_number" placeholder="7xxxxxxx" />
+          </div>
+          <div class="form-group">
+            <label>Education Level</label>
+            <input type="text" id="education_level" placeholder="Highest level" />
+          </div>
+          <div class="form-group">
+            <label>Occupation</label>
+            <input type="text" id="occupation" placeholder="Current occupation" />
+          </div>
+          <div class="form-group">
+            <label>Denomination</label>
+            <input type="text" id="denomination" placeholder="Church / Faith" />
+          </div>
+          <div class="form-group">
+            <label>Marital Status</label>
+            <select id="marital_status">
+              <option value="Single">Single</option>
+              <option value="Married">Married</option>
+              <option value="Widowed">Widowed</option>
+              <option value="Divorced">Divorced</option>
+            </select>
+          </div>
+          <div class="form-group full-width">
+            <label>GPS Boundary (WKT Polygon or GeoJSON)</label>
+            <input type="text" id="gps_boundary" placeholder='POLYGON(((146.6 -6.9, 146.7 -6.9, 146.7 -7.0, 146.6 -7.0, 146.6 -6.9)))' required />
+          </div>
+        </div>
+        <button type="submit" class="btn-submit">Submit Application</button>
+        <div id="form-message"></div>
+      </form>
+    </div>
+
+    <!-- Submitted Records Table Card -->
+    <div class="table-card">
+      <h3>Recently Submitted Applications</h3>
+      <table id="landowner-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Applicant Name</th>
+            <th>NID</th>
+            <th>Location</th>
+            <th>Clan</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td colspan="6" style="text-align: center; color: var(--text-muted);">Loading records...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
 
   <script type="module">
     import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
@@ -80,112 +333,88 @@
     const supabaseKey = "sb_publishable_vWNRqdWRDV8el4eWD0rIFg_nB1PxaUI";
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const form = document.getElementById("landowner-form");
-    const tableBody = document.querySelector("#landowners-table tbody");
-
-    // Insert new landowner
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-
-      const nid_number = document.getElementById("nid_number").value;
-      const birth_certificate_reg = document.getElementById("birth_certificate_reg").value;
-      const given_names = document.getElementById("given_names").value;
-      const family_name = document.getElementById("family_name").value;
-      const date_of_birth = document.getElementById("date_of_birth").value;
-      const place_of_birth = document.getElementById("place_of_birth").value;
-      const gender = document.getElementById("gender").value;
-      const province = document.getElementById("province").value;
-      const district = document.getElementById("district").value;
-      const llg = document.getElementById("llg").value;
-      const ward = document.getElementById("ward").value;
-      const village_town = document.getElementById("village_town").value;
-      const clan = document.getElementById("clan").value;
-      const tribe = document.getElementById("tribe").value;
-      const mobile_number = document.getElementById("mobile_number").value;
-      const education_level = document.getElementById("education_level").value;
-      const occupation = document.getElementById("occupation").value;
-      const denomination = document.getElementById("denomination").value;
-      const marital_status = document.getElementById("marital_status").value;
-      const gps_boundary = document.getElementById("gps_boundary").value;
-
-      // Notice 'data' is captured AND .select() is added at the end!
+    // Fetch and display existing records
+    async function fetchLandowners() {
+      const tableBody = document.querySelector("#landowner-table tbody");
+      
       const { data, error } = await supabase
         .from("landowner")
-        .insert([{
-          nid_number,
-          birth_certificate_reg,
-          given_names,
-          family_name,
-          date_of_birth,
-          place_of_birth,
-          gender,
-          province,
-          district,
-          llg,
-          ward,
-          village_town,
-          clan,
-          tribe,
-          mobile_number,
-          education_level,
-          occupation,
-          denomination,
-          marital_status,
-          gps_boundary
-        }])
-        .select(); 
+        .select("*")
+        .order("id", { ascending: false });
 
       if (error) {
-        alert("Error: " + error.message);
+        tableBody.innerHTML = `<tr><td colspan="6" style="color:red; text-align: center;">Error loading data: ${error.message}</td></tr>`;
+        return;
+      }
+
+      if (!data || data.length === 0) {
+        tableBody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted);">No applications found.</td></tr>`;
+        return;
+      }
+
+      tableBody.innerHTML = data.map(app => {
+        const status = app.warden_status || "Under Review";
+        const badgeClass = status === "Verified" ? "status-verified" : "status-pending";
+
+        return `
+          <tr>
+            <td><strong>#${app.id}</strong></td>
+            <td>${app.given_names || ''} ${app.family_name || ''}</td>
+            <td>${app.nid_number || 'N/A'}</td>
+            <td>${app.province || ''}, ${app.district || ''}</td>
+            <td>${app.clan || 'N/A'}</td>
+            <td><span class="status-badge ${badgeClass}">${status}</span></td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    // Handle form submission
+    document.getElementById("landowner-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const msgDiv = document.getElementById("form-message");
+      msgDiv.style.color = "#003366";
+      msgDiv.textContent = "Submitting application...";
+
+      const formData = {
+        nid_number: document.getElementById("nid_number").value,
+        birth_certificate: document.getElementById("birth_certificate").value,
+        given_names: document.getElementById("given_names").value,
+        family_name: document.getElementById("family_name").value,
+        date_of_birth: document.getElementById("date_of_birth").value,
+        place_of_birth: document.getElementById("place_of_birth").value,
+        gender: document.getElementById("gender").value,
+        province: document.getElementById("province").value,
+        district: document.getElementById("district").value,
+        llg: document.getElementById("llg").value,
+        ward: document.getElementById("ward").value,
+        village_town: document.getElementById("village_town").value,
+        clan: document.getElementById("clan").value,
+        tribe: document.getElementById("tribe").value,
+        mobile_number: document.getElementById("mobile_number").value,
+        education_level: document.getElementById("education_level").value,
+        occupation: document.getElementById("occupation").value,
+        denomination: document.getElementById("denomination").value,
+        marital_status: document.getElementById("marital_status").value,
+        gps_boundary: document.getElementById("gps_boundary").value,
+        warden_status: "Under Review"
+      };
+
+      const { error } = await supabase.from("landowner").insert([formData]);
+
+      if (error) {
+        msgDiv.style.color = "red";
+        msgDiv.textContent = "Submission failed: " + error.message;
       } else {
-        // Save the new record ID to localStorage
-        if (data && data.length > 0) {
-          localStorage.setItem("latest_aml_id", data[0].id);
-        }
-        
-        // Redirect directly to applicant status tracking page
-        window.location.href = "status.html";
+        msgDiv.style.color = "green";
+        msgDiv.textContent = "Application submitted successfully!";
+        document.getElementById("landowner-form").reset();
+        fetchLandowners();
       }
     });
 
-    // Fetch and display landowners table
-    async function loadLandowners() {
-      const { data, error } = await supabase
-        .from("landowner")
-        .select("*");
-
-      if (error) {
-        if (tableBody) tableBody.innerHTML = `<tr><td colspan="19">Error: ${error.message}</td></tr>`;
-      } else if (tableBody) {
-        tableBody.innerHTML = data.map(l => `
-          <tr>
-            <td>${l.nid_number || ""}</td>
-            <td>${l.given_names || ""}</td>
-            <td>${l.family_name || ""}</td>
-            <td>${l.date_of_birth || ""}</td>
-            <td>${l.place_of_birth || ""}</td>
-            <td>${l.gender || ""}</td>
-            <td>${l.province || ""}</td>
-            <td>${l.district || ""}</td>
-            <td>${l.llg || ""}</td>
-            <td>${l.ward || ""}</td>
-            <td>${l.village_town || ""}</td>
-            <td>${l.clan || ""}</td>
-            <td>${l.tribe || ""}</td>
-            <td>${l.mobile_number || ""}</td>
-            <td>${l.education_level || ""}</td>
-            <td>${l.occupation || ""}</td>
-            <td>${l.denomination || ""}</td>
-            <td>${l.marital_status || ""}</td>
-            <td>${l.gps_boundary || ""}</td>
-          </tr>
-        `).join("");
-      }
-    }
-
-    // Load existing records on page start
-    loadLandowners();
+    // Initial load
+    fetchLandowners();
   </script>
 </body>
 </html>
-
