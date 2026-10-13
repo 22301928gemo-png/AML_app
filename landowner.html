@@ -14,11 +14,11 @@
   <nav>
     <a href="dashboard.html">Dashboard</a>
     <a href="index.html">Landowner Page</a>
-    <a href="status.html"> Status</a>
+    <a href="status.html">Status</a>
   </nav>
   
   <h1>Landowner Form</h1>
-  <!--   Form for adding lndowners-->
+  <!-- Form for adding landowners-->
   <form id="landowner-form">
     <input id="nid_number" placeholder="NID Number" required/>
     <input id="birth_certificate_reg" placeholder="Birth Certificate"/>
@@ -28,22 +28,23 @@
     <input id="place_of_birth" placeholder="Place of Birth"/>
     <input id="gender" placeholder="Gender"/>
     <input id="province" placeholder="Province"/>
-    <input id="district"placeholder="District"/>
-    <input id="llg"placeholder="Llg"/>
-    <input id="ward"placeholder="Ward"/>
-    <input id="village_town"placeholder="village/Town"/>
-    <input id="clan"placeholder="Clan"/>
-    <input id="tribe"placeholder="Tribe"/>
-    <input id="mobile_number"placeholder="Mobile Number"/>
-    <input id="education_level"placeholder="Education Level"/>
-    <input id="occupation"placeholder="Occupation"/>
-    <input id="denomination"placeholder="Denomination"/>
-    <input id="marital_status"placeholder="Marital Status"/>
-    <input id="gps_boundary"placeholder="gps Boundary"/>
+    <input id="district" placeholder="District"/>
+    <input id="llg" placeholder="Llg"/>
+    <input id="ward" placeholder="Ward"/>
+    <input id="village_town" placeholder="village/Town"/>
+    <input id="clan" placeholder="Clan"/>
+    <input id="tribe" placeholder="Tribe"/>
+    <input id="mobile_number" placeholder="Mobile Number"/>
+    <input id="education_level" placeholder="Education Level"/>
+    <input id="occupation" placeholder="Occupation"/>
+    <input id="denomination" placeholder="Denomination"/>
+    <input id="marital_status" placeholder="Marital Status"/>
+    <input id="gps_boundary" placeholder="gps Boundary"/>
     
     <button type="submit">Submit</button>
   </form>
-   <!-- Table to display results -->
+
+  <!-- Table to display results -->
   <h2>Landowners</h2>
   <table id="landowners-table">
     <thead>
@@ -53,11 +54,10 @@
         <th>Family Name</th>
         <th>Date of Birth</th>
         <th>Place of Birth</th>
-        <th>gender</th>
+        <th>Gender</th>
         <th>Province</th>
         <th>District</th>
         <th>LLG</th>
-        <th>Llg</th>
         <th>Ward</th>
         <th>Village/Town</th>
         <th>Clan</th>
@@ -67,67 +67,52 @@
         <th>Occupation</th>
         <th>Denomination</th>
         <th>Marital Status</th>
-        <th>gps Boundary</th>
+        <th>GPS Boundary</th>
       </tr>
     </thead>
     <tbody></tbody>
   </table>
 
-  <!-- Selection to display results-->
   <script type="module">
-     import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
-    // Replace with your Supabase project details
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+
     const supabaseUrl = 'https://dbppvcfxtbhuuskwyycc.supabase.co';
     const supabaseKey = "sb_publishable_vWNRqdWRDV8el4eWD0rIFg_nB1PxaUI";
     const supabase = createClient(supabaseUrl, supabaseKey);
-    //Test connections
-    async function testConnection() {
-  const { data, error } = await supabase
-    .from("landowner")
-    .select("*");
-
-  if (error) {
-    console.error("❌ Supabase error:", error.message);
-  } else {
-    console.log("✅ Supabase connected. Rows:", data);
-  }
-}
-
-// Run the test when page loads
-testConnection();
 
     const form = document.getElementById("landowner-form");
-    const output = document.getElementById("output");
-    const tableBody = document.querySelector("#landowner-table tbody");
-    
-    //Insert new landowner
+    const tableBody = document.querySelector("#landowners-table tbody");
+
+    // Insert new landowner
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
+
       const nid_number = document.getElementById("nid_number").value;
       const birth_certificate_reg = document.getElementById("birth_certificate_reg").value;
-      const given_names=document.getElementById("given_names").value;
-      const family_name=document.getElementById("family_name").value;
-      const date_of_birth=document.getElementById("date_of_birth").value;
-      const place_of_birth=document.getElementById("place_of_birth").value;
-      const gender=document.getElementById("gender").value;
-      const province=document.getElementById("province").value;
-      const district=document.getElementById("district").value;
-      const llg=document.getElementById("llg").value;
-      const ward=document.getElementById("ward").value;
-      const village_town=document.getElementById("village_town").value;
-      const clan=document.getElementById("clan").value;
-      const tribe=document.getElementById("tribe").value;
-      const mobile_number=document.getElementById("mobile_number").value;
-      const education_level=document.getElementById("education_level").value;
-      const occupation=document.getElementById("occupation").value;
-      const denomination=document.getElementById("denomination").value;
-      const marital_status=document.getElementById("marital_status").value;
-      const gps_boundary=document.getElementById("gps_boundary").value;
+      const given_names = document.getElementById("given_names").value;
+      const family_name = document.getElementById("family_name").value;
+      const date_of_birth = document.getElementById("date_of_birth").value;
+      const place_of_birth = document.getElementById("place_of_birth").value;
+      const gender = document.getElementById("gender").value;
+      const province = document.getElementById("province").value;
+      const district = document.getElementById("district").value;
+      const llg = document.getElementById("llg").value;
+      const ward = document.getElementById("ward").value;
+      const village_town = document.getElementById("village_town").value;
+      const clan = document.getElementById("clan").value;
+      const tribe = document.getElementById("tribe").value;
+      const mobile_number = document.getElementById("mobile_number").value;
+      const education_level = document.getElementById("education_level").value;
+      const occupation = document.getElementById("occupation").value;
+      const denomination = document.getElementById("denomination").value;
+      const marital_status = document.getElementById("marital_status").value;
+      const gps_boundary = document.getElementById("gps_boundary").value;
 
-      const { error } = await supabase
+      // Notice 'data' is captured AND .select() is added at the end!
+      const { data, error } = await supabase
         .from("landowner")
         .insert([{
-           nid_number,
+          nid_number,
           birth_certificate_reg,
           given_names,
           family_name,
@@ -147,30 +132,31 @@ testConnection();
           denomination,
           marital_status,
           gps_boundary
-          
-        }]);
+        }])
+        .select(); 
 
       if (error) {
-    alert("Error: " + error.message);
-  } else {
-    // Save the new record ID to localStorage if available
-    if (data && data.length > 0) {
-      localStorage.setItem("latest_aml_id", data[0].id);
-    }
-    
-    // Redirect directly to your applicant status tracking page
-    window.location.href = "status.html";
-  }
-    
-    //Fetch and display landowners
-    async function loadLandowners(){
-      const {data, error} = await supabase
-      .from("landowner")
-      .select("*");
+        alert("Error: " + error.message);
+      } else {
+        // Save the new record ID to localStorage
+        if (data && data.length > 0) {
+          localStorage.setItem("latest_aml_id", data[0].id);
+        }
+        
+        // Redirect directly to applicant status tracking page
+        window.location.href = "status.html";
+      }
+    });
 
-      if (error){
-        tableBody.innerHTML = `<tr><td colspan="6">Error: ${error.message}</td></tr>`;
-      } else{
+    // Fetch and display landowners table
+    async function loadLandowners() {
+      const { data, error } = await supabase
+        .from("landowner")
+        .select("*");
+
+      if (error) {
+        if (tableBody) tableBody.innerHTML = `<tr><td colspan="19">Error: ${error.message}</td></tr>`;
+      } else if (tableBody) {
         tableBody.innerHTML = data.map(l => `
           <tr>
             <td>${l.nid_number || ""}</td>
@@ -196,7 +182,8 @@ testConnection();
         `).join("");
       }
     }
-    //Load existing records on page start
+
+    // Load existing records on page start
     loadLandowners();
   </script>
 </body>
