@@ -77,7 +77,7 @@
 
       // Query Supabase for the specific landowner record
       const { data, error } = await supabase
-        .from("landowners")
+        .from("landowner")
         .select("*")
         .eq("id", appId)
         .single();
