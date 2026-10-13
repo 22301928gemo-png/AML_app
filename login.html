@@ -7,7 +7,7 @@
     body { font-family: Arial, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background: #f4f4f4; margin: 0; }
     .login-card { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); width: 300px; }
     input { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-    button { width: 100%; padding: 10px; background: #004080; color: white; border: none; border-radius: 4px; cursor: pointer; }
+    button { width: 100%; padding: 10px; background: #004080; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
     button:hover { background: #003366; }
     .error { color: red; font-size: 14px; margin-top: 10px; text-align: center; }
   </style>
@@ -23,9 +23,9 @@
     </form>
     <div id="error-message" class="error"></div>
 
-    <!-- Back to dashboard-->
+    <!-- Back link updated to intake form / status page -->
     <div style="margin-top: 15px; text-align: center;">
-      <a href="dashboard.html" style="text-decoration: none; color: #004080; font-size: 14px;">← Back to Dashboard</a>
+      <a href="landowner.html" style="text-decoration: none; color: #004080; font-size: 14px;">← Back to Application Intake</a>
     </div>
   </div>
 
@@ -41,6 +41,8 @@
 
     loginForm.addEventListener("submit", async (e) => {
       e.preventDefault();
+      errorMessage.textContent = ""; // Clear old errors
+
       const email = document.getElementById("email").value;
       const password = document.getElementById("password").value;
 
@@ -52,7 +54,7 @@
       if (error) {
         errorMessage.textContent = error.message;
       } else {
-        // Successful login, redirect to the secure dashboard
+        // 🚀 UPDATED: Redirects straight to the MRA Warden GIS page
         window.location.href = "warden.html";
       }
     });
