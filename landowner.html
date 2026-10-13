@@ -157,6 +157,13 @@ testConnection();
         loadLandowners(); //refresh list after insert
       }
     });
+    if (error) {
+    alert("Error: " + error.message);
+  } else {
+    alert("Application submitted successfully!");
+    // THIS IS WHERE YOU CHANGE THE REDIRECTION
+  }
+});
     //Fetch and display landowners
     async function loadLandowners(){
       const {data, error} = await supabase
