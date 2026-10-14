@@ -344,7 +344,7 @@
     // Fetch and display existing records
     async function fetchLandowners() {
       const tableBody = document.querySelector("#landowner-table tbody");
-      
+      try{
       const { data, error } = await supabase
         .from("landowner")
         .select("*")
@@ -375,6 +375,10 @@
           </tr>
         `;
       }).join("");
+    } catch (err) {
+        console.error("Script exception:", err);
+        tableBody.innerHTML = `<tr><td colspan="6" style="color:red; text-align: center; padding: 15px;">Script error: ${err.message}</td></tr>`;
+      }
     }
 
     // Handle form submission
@@ -405,7 +409,6 @@
           const { data: publicUrlData } = supabase.storage
             .from('aml-documents')
             .getPublicUrl(fileName);
-          
           nidUrl = publicUrlData.publicUrl;
         }
 
@@ -445,6 +448,8 @@
         denomination: document.getElementById("denomination").value,
         marital_status: document.getElementById("marital_status").value,
         gps_boundary: document.getElementById("gps_boundary").value,
+        nid_document_url: nidUrl,           // Saved document link
+        birth_cert_url: birthCertUrl,       // Saved document link
         warden_status: "Under Review"
       };
 
