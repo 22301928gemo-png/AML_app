@@ -379,8 +379,6 @@
         console.error("Script exception:", err);
         tableBody.innerHTML = `<tr><td colspan="6" style="color:red; text-align: center; padding: 15px;">Script error: ${err.message}</td></tr>`;
       }
-    }
-
     // Handle form submission
     document.getElementById("landowner-form").addEventListener("submit", async (e) => {
       e.preventDefault();
