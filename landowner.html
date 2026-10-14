@@ -382,8 +382,48 @@
       e.preventDefault();
       const msgDiv = document.getElementById("form-message");
       msgDiv.style.color = "#003366";
-      msgDiv.textContent = "Submitting application...";
+      msgDiv.textContent = "Uploading documents and Submitting application...";
 
+      try {
+        const nidFile = document.getElementById("nid_file").files[0];
+        const birthFile = document.getElementById("birth_cert_file").files[0];
+        const timestamp = Date.now();
+
+        let nidUrl = null;
+        let birthCertUrl = null;
+
+        // 1. Upload NID File if present
+        if (nidFile) {
+          const fileName = `nid_${timestamp}_${nidFile.name}`;
+          const { data: uploadData, error: uploadError } = await supabase.storage
+            .from('aml-documents')
+            .upload(fileName, nidFile);
+
+          if (uploadError) throw new Error("NID Upload failed: " + uploadError.message);
+
+          // Get public URL
+          const { data: publicUrlData } = supabase.storage
+            .from('aml-documents')
+            .getPublicUrl(fileName);
+          
+          nidUrl = publicUrlData.publicUrl;
+        }
+
+        // 2. Upload Birth Certificate File if present
+        if (birthFile) {
+          const fileName = `birth_${timestamp}_${birthFile.name}`;
+          const { data: uploadData, error: uploadError } = await supabase.storage
+            .from('aml-documents')
+            .upload(fileName, birthFile);
+
+          if (uploadError) throw new Error("Birth Certificate Upload failed: " + uploadError.message);
+
+          const { data: publicUrlData } = supabase.storage
+            .from('aml-documents')
+            .getPublicUrl(fileName);
+          
+          birthCertUrl = publicUrlData.publicUrl;
+        }
       const formData = {
         nid_number: document.getElementById("nid_number").value,
         birth_certificate: document.getElementById("birth_certificate").value,
