@@ -25,7 +25,6 @@
       padding: 0;
     }
 
-    /* Top Navigation Bar */
     header {
       background-color: var(--primary);
       color: white;
@@ -55,14 +54,12 @@
       color: var(--accent);
     }
 
-    /* Main Container */
     .container {
       max-width: 1100px;
       margin: 30px auto;
       padding: 0 20px;
     }
 
-    /* Form Card Styling */
     .form-card {
       background: var(--card-bg);
       padding: 30px;
@@ -132,7 +129,6 @@
       background-color: var(--primary-dark);
     }
 
-    /* Applications Table Section */
     .table-card {
       background: var(--card-bg);
       padding: 25px;
@@ -192,7 +188,6 @@
 </head>
 <body>
 
-  <!-- Top Navigation -->
   <header>
     <div class="logo-area">
       <h2>MRA Landowner Portal</h2>
@@ -204,8 +199,6 @@
   </header>
 
   <div class="container">
-
-    <!-- Landowner Intake Form Card -->
     <div class="form-card">
       <h3>Submit New Alluvial Mining Lease Application</h3>
       <form id="landowner-form">
@@ -312,7 +305,6 @@
       </form>
     </div>
 
-    <!-- Submitted Records Table Card -->
     <div class="table-card">
       <h3>Recently Submitted Applications</h3>
       <table id="landowner-table">
@@ -331,7 +323,6 @@
         </tbody>
       </table>
     </div>
-
   </div>
 
   <script type="module">
@@ -341,50 +332,50 @@
     const supabaseKey = "sb_publishable_vWNRqdWRDV8el4eWD0rIFg_nB1PxaUI";
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Fetch and display existing records
     async function fetchLandowners() {
       const tableBody = document.querySelector("#landowner-table tbody");
-      try{
-      const { data, error } = await supabase
-        .from("landowner")
-        .select("*")
-        .order("id", { ascending: false });
+      try {
+        const { data, error } = await supabase
+          .from("landowner")
+          .select("*")
+          .order("id", { ascending: false });
 
-      if (error) {
-        tableBody.innerHTML = `<tr><td colspan="6" style="color:red; text-align: center;">Error loading data: ${error.message}</td></tr>`;
-        return;
-      }
+        if (error) {
+          tableBody.innerHTML = `<tr><td colspan="6" style="color:red; text-align: center;">Error loading data: ${error.message}</td></tr>`;
+          return;
+        }
 
-      if (!data || data.length === 0) {
-        tableBody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted);">No applications found.</td></tr>`;
-        return;
-      }
+        if (!data || data.length === 0) {
+          tableBody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted);">No applications found.</td></tr>`;
+          return;
+        }
 
-      tableBody.innerHTML = data.map(app => {
-        const status = app.warden_status || "Under Review";
-        const badgeClass = status === "Verified" ? "status-verified" : "status-pending";
+        tableBody.innerHTML = data.map(app => {
+          const status = app.warden_status || "Under Review";
+          const badgeClass = status === "Verified" ? "status-verified" : "status-pending";
 
-        return `
-          <tr>
-            <td><strong>#${app.id}</strong></td>
-            <td>${app.given_names || ''} ${app.family_name || ''}</td>
-            <td>${app.nid_number || 'N/A'}</td>
-            <td>${app.province || ''}, ${app.district || ''}</td>
-            <td>${app.clan || 'N/A'}</td>
-            <td><span class="status-badge ${badgeClass}">${status}</span></td>
-          </tr>
-        `;
-      }).join("");
-    } catch (err) {
+          return `
+            <tr>
+              <td><strong>#${app.id}</strong></td>
+              <td>${app.given_names || ''} ${app.family_name || ''}</td>
+              <td>${app.nid_number || 'N/A'}</td>
+              <td>${app.province || ''}, ${app.district || ''}</td>
+              <td>${app.clan || 'N/A'}</td>
+              <td><span class="status-badge ${badgeClass}">${status}</span></td>
+            </tr>
+          `;
+        }).join("");
+      } catch (err) {
         console.error("Script exception:", err);
         tableBody.innerHTML = `<tr><td colspan="6" style="color:red; text-align: center; padding: 15px;">Script error: ${err.message}</td></tr>`;
       }
-    // Handle form submission
+    }
+
     document.getElementById("landowner-form").addEventListener("submit", async (e) => {
       e.preventDefault();
       const msgDiv = document.getElementById("form-message");
       msgDiv.style.color = "#003366";
-      msgDiv.textContent = "Uploading documents and Submitting application...";
+      msgDiv.textContent = "Uploading documents and submitting application...";
 
       try {
         const nidFile = document.getElementById("nid_file").files[0];
@@ -394,26 +385,23 @@
         let nidUrl = null;
         let birthCertUrl = null;
 
-        // 1. Upload NID File if present
         if (nidFile) {
           const fileName = `nid_${timestamp}_${nidFile.name}`;
-          const { data: uploadData, error: uploadError } = await supabase.storage
+          const { error: uploadError } = await supabase.storage
             .from('aml-documents')
             .upload(fileName, nidFile);
 
           if (uploadError) throw new Error("NID Upload failed: " + uploadError.message);
 
-          // Get public URL
           const { data: publicUrlData } = supabase.storage
             .from('aml-documents')
             .getPublicUrl(fileName);
           nidUrl = publicUrlData.publicUrl;
         }
 
-        // 2. Upload Birth Certificate File if present
         if (birthFile) {
           const fileName = `birth_${timestamp}_${birthFile.name}`;
-          const { data: uploadData, error: uploadError } = await supabase.storage
+          const { error: uploadError } = await supabase.storage
             .from('aml-documents')
             .upload(fileName, birthFile);
 
@@ -422,49 +410,53 @@
           const { data: publicUrlData } = supabase.storage
             .from('aml-documents')
             .getPublicUrl(fileName);
-          
           birthCertUrl = publicUrlData.publicUrl;
         }
-      const formData = {
-        nid_number: document.getElementById("nid_number").value,
-        birth_certificate: document.getElementById("birth_certificate").value,
-        given_names: document.getElementById("given_names").value,
-        family_name: document.getElementById("family_name").value,
-        date_of_birth: document.getElementById("date_of_birth").value,
-        place_of_birth: document.getElementById("place_of_birth").value,
-        gender: document.getElementById("gender").value,
-        province: document.getElementById("province").value,
-        district: document.getElementById("district").value,
-        llg: document.getElementById("llg").value,
-        ward: document.getElementById("ward").value,
-        village_town: document.getElementById("village_town").value,
-        clan: document.getElementById("clan").value,
-        tribe: document.getElementById("tribe").value,
-        mobile_number: document.getElementById("mobile_number").value,
-        education_level: document.getElementById("education_level").value,
-        occupation: document.getElementById("occupation").value,
-        denomination: document.getElementById("denomination").value,
-        marital_status: document.getElementById("marital_status").value,
-        gps_boundary: document.getElementById("gps_boundary").value,
-        nid_document_url: nidUrl,           // Saved document link
-        birth_cert_url: birthCertUrl,       // Saved document link
-        warden_status: "Under Review"
-      };
 
-      const { error } = await supabase.from("landowner").insert([formData]);
+        const formData = {
+          nid_number: document.getElementById("nid_number").value,
+          birth_certificate: document.getElementById("birth_certificate").value,
+          given_names: document.getElementById("given_names").value,
+          family_name: document.getElementById("family_name").value,
+          date_of_birth: document.getElementById("date_of_birth").value,
+          place_of_birth: document.getElementById("place_of_birth").value,
+          gender: document.getElementById("gender").value,
+          province: document.getElementById("province").value,
+          district: document.getElementById("district").value,
+          llg: document.getElementById("llg").value,
+          ward: document.getElementById("ward").value,
+          village_town: document.getElementById("village_town").value,
+          clan: document.getElementById("clan").value,
+          tribe: document.getElementById("tribe").value,
+          mobile_number: document.getElementById("mobile_number").value,
+          education_level: document.getElementById("education_level").value,
+          occupation: document.getElementById("occupation").value,
+          denomination: document.getElementById("denomination").value,
+          marital_status: document.getElementById("marital_status").value,
+          gps_boundary: document.getElementById("gps_boundary").value,
+          nid_document_url: nidUrl,
+          birth_cert_url: birthCertUrl,
+          warden_status: "Under Review"
+        };
 
-      if (error) {
+        const { error } = await supabase.from("landowner").insert([formData]);
+
+        if (error) {
+          msgDiv.style.color = "red";
+          msgDiv.textContent = "Submission failed: " + error.message;
+        } else {
+          msgDiv.style.color = "green";
+          msgDiv.textContent = "Application submitted successfully!";
+          document.getElementById("landowner-form").reset();
+          fetchLandowners();
+        }
+
+      } catch (err) {
         msgDiv.style.color = "red";
-        msgDiv.textContent = "Submission failed: " + error.message;
-      } else {
-        msgDiv.style.color = "green";
-        msgDiv.textContent = "Application submitted successfully!";
-        document.getElementById("landowner-form").reset();
-        fetchLandowners();
+        msgDiv.textContent = "Submission error: " + err.message;
       }
     });
 
-    // Initial load
     fetchLandowners();
   </script>
 </body>
