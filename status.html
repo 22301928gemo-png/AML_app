@@ -1,1 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>MRA Application Status & Tracking Portal</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    :root {
+      --primary: #003366;
+      --primary-dark: #002244;
+      --accent: #f0ad4e;
+      --bg-color: #f4f7f6;
+      --card-bg: #ffffff;
+      --text-main: #333333;
+      --text-muted: #666666;
+      --border: #cccccc;
+    }
 
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      background-color: var(--primary);
+      color: white;
+      padding: 15px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .logo-area h2 {
+      margin: 0;
+      font-size: 20px;
+      letter-spacing: 0.5px;
+    }
+
+    nav a {
+      color: white;
+      text-decoration: none;
+      margin-left: 20px;
+      font-weight: 600;
+      font-size: 14px;
+      transition: color 0.2s;
+    }
+
+    nav a:hover, nav a.active {
+      color: var(--accent);
+    }
+
+    .container {
+      max-width: 850px;
+      margin: 40px auto;
+      padding: 0 20px;
+    }
+
+    .role-banner {
+      background: #e8f4fd;
+      border-left: 4px solid var(--primary);
+      padding: 12px 18px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+      font-size: 13px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .tracker-card {
+      background: var(--card-bg);
+      padding: 35px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+
+    .tracker-card h2 {
+      color: var(--primary);
+      margin-top: 0;
+      margin-bottom: 10px;
+    }
+
+    .tracker-card p {
+      color: var(--text-muted);
+      font-size: 14px;
+      margin-bottom: 25px;
+    }
+
+    .search-box {
+      display: flex;
+      gap: 10px;
+    }
+
+    .search-box input {
+      flex: 1;
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-size: 15px;
+      outline: none;
+    }
+
+    .search-box input:focus {
+      border-color: var(--primary);
+    }
+
+    .btn-search {
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      padding: 0 25px;
+      font-size: 15px;
+      font-weight: bold;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .btn-search:hover {
+      background-color: var(--primary-dark);
+    }
+
+    #tracker-result {
+      margin-top: 25px;
+    }
+
+    .result-box {
+      background: #fafbfc;
+      border: 1px solid #e1e4e8;
+      border-radius: 6px;
+      padding: 20px;
+      margin-top: 15px;
+    }
+
+    .status-pill {
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: bold;
+      display: inline-block;
+      color: white;
+    }
+
+    .doc-link {
+      display: inline-block;
+      margin-right: 10px;
+      margin-top: 5px;
+      padding: 5px 10px;
+      background: #e9ecef;
+      border-radius: 4px;
+      text-decoration: none;
+      color: #003366;
+      font-size: 12px;
+      font-weight: bold;
+    }
+    .doc-link:hover { background: #dee2e6; }
+
+    .btn-warden-edit {
+      background: #0275d8;
+      color: white;
+      padding: 8px 15px;
+      border-radius: 4px;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: bold;
+      display: inline-block;
+      margin-top: 15px;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="logo-area">
+      <h2>MRA Application Portal</h2>
+    </div>
+    <nav>
+      <a href="landowner.html">Intake Form</a>
+      <a href="status.html" class="active">Track Status</a>
+      <a href="warden.html">Warden Portal</a>
+    </nav>
+  </header>
+
+  <div class="container">
+    <div id="role-banner" class="role-banner">
+      <span id="role-text">👤 View Mode: <strong>Landowner Public Mode</strong></span>
+      <small><a href="status.html?role=warden" style="color: var(--primary); font-weight: bold;">Switch to Warden Mode</a></small>
+    </div>
+
+    <div class="tracker-card">
+      <h2 id="view-heading">Check Application Status</h2>
+      <p id="view-subtext">Enter your <strong>Application Reference ID</strong> (e.g. 12) or registered <strong>Mobile Number</strong> to check current progress.</p>
+      
+      <div class="search-box">
+        <input type="text" id="track-query" placeholder="Enter Application ID or Mobile Number..." />
+        <button class="btn-search" id="btn-track">Search</button>
+      </div>
+
+      <div id="tracker-result"></div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+
+    const supabaseUrl = 'https://dbppvcfxtbhuuskwyycc.supabase.co';
+    const supabaseKey = "sb_publishable_vWNRqdWRDV8el4eWD0rIFg_nB1PxaUI";
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // Detect user role mode from URL parameter or session
+    const urlParams = new URLSearchParams(window.location.search);
+    let requestedRole = urlParams.get('role');
+    let isWarden = false;
+
+    async function initRoleView() {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (requestedRole === 'warden' || session) {
+        isWarden = true;
+        document.getElementById("role-text").innerHTML = "🤠 View Mode: <strong>MRA Mining Warden Mode</strong>";
+        document.getElementById("role-banner").style.background = "#fff3cd";
+        document.getElementById("role-banner").style.borderLeftColor = "#f0ad4e";
+        document.getElementById("view-heading").textContent = "Warden Application Inspection";
+        document.getElementById("view-subtext").textContent = "Search any submitted record by Application ID, Mobile Number, or Clan name to view full technical metadata.";
+      }
+
+      // Auto-search if ID is passed in URL (e.g. status.html?id=12)
+      const appIdParam = urlParams.get('id');
+      if (appIdParam) {
+        document.getElementById("track-query").value = appIdParam;
+        performSearch(appIdParam);
+      }
+    }
+
+    async function performSearch(query) {
+      const resDiv = document.getElementById("tracker-result");
+      if (!query) {
+        resDiv.innerHTML = `<p style="color: red; font-weight: bold;">Please enter an Application ID or Mobile Number.</p>`;
+        return;
+      }
+
+      resDiv.innerHTML = `<p style="color: var(--primary);">Searching records...</p>`;
+
+      try {
+        const { data, error } = await supabase
+          .from("landowner")
+          .select("*")
+          .or(`id.eq.${parseInt(query) || 0},mobile_number.eq.${query},clan.ilike.%${query}%`);
+
+        if (error || !data || data.length === 0) {
+          resDiv.innerHTML = `<p style="color: red; font-weight: bold;">No matching application found. Please verify your reference ID or phone number.</p>`;
+          return;
+        }
+
+        const app = data[0];
+        const status = app.warden_status || "Under Review";
+        
+        let badgeColor = "#f0ad4e"; // Orange
+        let statusText = "Under Review by MRA Warden";
+        let nextSteps = "Your application has been received and scheduled for Warden field verification and customary clan hearing.";
+
+        if (status === "Verified") {
+          badgeColor = "#5cb85c"; // Green
+          statusText = "Verified & Certified by Mining Warden";
+          nextSteps = "Your boundary and clan declaration are approved by the Warden and forwarded to the Mining Advisory Council (MAC).";
+        } else if (status.includes("Dispute") || status.includes("Flagged")) {
+          badgeColor = "#d9534f"; // Red
+          statusText = "Flagged for Warden Hearing / Dispute";
+          nextSteps = "A boundary overlap or customary dispute was recorded during inspection. Please consult your regional MRA Mining Warden.";
+        }
+
+        // RENDER CUSTOMIZED VIEWS BASED ON ROLE
+        if (isWarden) {
+          // 🤠 WARDEN VIEW
+          resDiv.innerHTML = `
+            <div class="result-box" style="border-left: 4px solid #0275d8;">
+              <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <h3 style="margin: 0; color: #003366;">Ref: AML-#${app.id}</h3>
+                <span class="status-pill" style="background: ${badgeColor};">${status}</span>
+              </div>
+              <hr style="border: none; border-top: 1px solid #ddd; margin: 10px 0;"/>
+              <p style="margin: 5px 0;"><strong>Applicant:</strong> ${app.given_names} ${app.family_name} (NID: ${app.nid_number || 'N/A'})</p>
+              <p style="margin: 5px 0;"><strong>Location:</strong> ${app.province}, ${app.district} | <strong>Clan:</strong> ${app.clan}</p>
+              <p style="margin: 5px 0;"><strong>Mining Method:</strong> ${app.mining_method || 'Manual'}</p>
+              <p style="margin: 5px 0;"><strong>GPS Boundary:</strong> <code style="font-size: 11px;">${app.gps_boundary || 'N/A'}</code></p>
+              
+              <div style="margin-top: 10px;">
+                <strong>Submitted Documents:</strong><br/>
+                ${app.nid_document_url ? `<a href="${app.nid_document_url}" target="_blank" class="doc-link">📄 NID Document</a>` : '<span style="color:red; font-size:12px;">No NID</span>'}
+                ${app.declaration_url ? `<a href="${app.declaration_url}" target="_blank" class="doc-link">📜 Clan Declaration</a>` : '<span style="color:red; font-size:12px;">No Declaration</span>'}
+              </div>
+
+              <div style="background: #fff; padding: 10px; border: 1px solid #ccc; border-radius: 4px; margin-top: 10px;">
+                <strong>Recorded Hearing Notes:</strong><br/>
+                <span style="font-size: 13px; color: #444;">${app.warden_notes || 'No hearing notes recorded yet.'}</span>
+              </div>
+
+              <a href="warden.html" class="btn-warden-edit">⚡ Open & Update in Warden Portal</a>
+            </div>
+          `;
+        } else {
+          // 👤 LANDOWNER VIEW
+          resDiv.innerHTML = `
+            <div class="result-box">
+              <h3 style="margin-top: 0; color: #003366;">Application Reference: AML-#${app.id}</h3>
+              <p style="margin: 6px 0;"><strong>Applicant Name:</strong> ${app.given_names || ''} ${app.family_name || ''}</p>
+              <p style="margin: 6px 0;"><strong>Location:</strong> ${app.province || ''}, ${app.district || ''} (${app.clan || 'N/A'} Clan)</p>
+              <p style="margin: 6px 0;"><strong>Current Status:</strong> <span class="status-pill" style="background: ${badgeColor};">${statusText}</span></p>
+              <p style="margin: 10px 0 6px 0;"><strong>Warden Hearing / Field Notes:</strong></p>
+              <div style="background: #fff; padding: 10px; border-left: 3px solid #003366; font-size: 13px; color: #444;">
+                ${app.warden_notes || 'No field notes recorded yet. Scheduled for warden inspection.'}
+              </div>
+              <p style="margin-top: 12px; font-size: 12px; color: #666;"><strong>Next Steps:</strong> ${nextSteps}</p>
+            </div>
+          `;
+        }
+
+      } catch (err) {
+        resDiv.innerHTML = `<p style="color: red;">Error executing search: ${err.message}</p>`;
+      }
+    }
+
+    document.getElementById("btn-track").addEventListener("click", () => {
+      const query = document.getElementById("track-query").value.trim();
+      performSearch(query);
+    });
+
+    initRoleView();
+  </script>
+</body>
+</html>
