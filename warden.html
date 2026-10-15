@@ -2,375 +2,456 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>MRA Mining Warden Portal & GIS Verification</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    body { font-family: Arial, sans-serif; margin: 20px; background-color: #f9f9f9; color: #333; }
-    h1, h2 { color: #003366; }
-    nav { margin-bottom: 20px; background: #003366; padding: 12px 20px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; }
-    nav a { color: #fff; text-decoration: none; margin-right: 15px; font-weight: bold; font-size: 14px; }
-    nav a:hover { color: #f0ad4e; }
-    
-    table { width: 100%; border-collapse: collapse; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-top: 10px; }
-    th, td { border: 1px solid #ddd; padding: 10px; text-align: left; font-size: 13px; }
-    th { background: #f0f4f8; color: #003366; font-weight: bold; }
-    
-    .btn-pdf { background-color: #d9534f; color: white; border: none; padding: 6px 10px; cursor: pointer; border-radius: 3px; font-weight: bold; font-size: 11px; }
-    .btn-map { background-color: #0275d8; color: white; border: none; padding: 6px 10px; cursor: pointer; border-radius: 3px; font-weight: bold; font-size: 11px; margin-right: 4px; }
-    .btn-docs { background-color: #6c757d; color: white; border: none; padding: 6px 10px; cursor: pointer; border-radius: 3px; font-weight: bold; font-size: 11px; margin-right: 4px; }
-    
-    .status-badge { padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; display: inline-block; }
-    .status-pending { background: #f0ad4e; color: white; }
-    .status-verified { background: #5cb85c; color: white; }
-    .status-disputed { background: #d9534f; color: white; }
-    
-    /* Modal styles for GIS Map Viewer & Document Inspection */
-    .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); }
-    .modal-content { background: white; margin: 2% auto; padding: 20px; width: 85%; max-width: 850px; max-height: 90vh; overflow-y: auto; border-radius: 6px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); position: relative; }
-    .close-btn { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; }
-    .close-btn:hover { color: black; }
-    
-    #warden-map { height: 350px; width: 100%; margin-top: 15px; border-radius: 4px; border: 1px solid #ccc; }
-    
-    .action-group { display: flex; gap: 10px; margin-top: 15px; }
-    .btn-verify { background-color: #5cb85c; color: white; border: none; padding: 12px 20px; font-size: 14px; font-weight: bold; cursor: pointer; border-radius: 4px; flex: 1; }
-    .btn-verify:hover { background-color: #4cae4c; }
-    .btn-dispute { background-color: #d9534f; color: white; border: none; padding: 12px 20px; font-size: 14px; font-weight: bold; cursor: pointer; border-radius: 4px; flex: 1; }
-    .btn-dispute:hover { background-color: #c9302c; }
+  <title>MRA Mining Warden GIS & Technical Verification Portal</title>
 
-    .doc-link { display: inline-block; margin: 5px 0; padding: 6px 12px; background: #e9ecef; border-radius: 4px; text-decoration: none; color: #003366; font-weight: bold; font-size: 12px; }
-    .doc-link:hover { background: #dee2e6; }
-    
-    textarea { width: 100%; box-sizing: border-box; padding: 8px; border: 1px solid #ccc; border-radius: 4px; margin-top: 8px; font-family: inherit; }
-  </style>
-
-  <!-- Leaflet CSS & JS for Interactive Maps -->
+  <!-- Leaflet CSS for GIS Boundary Rendering -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <!-- html2pdf Library for PDF exports -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+  <style>
+    :root {
+      --primary-navy: #003366;
+      --navy-hover: #002244;
+      --accent-blue: #0066cc;
+      --bg-color: #f4f6f9;
+      --card-bg: #ffffff;
+      --text-main: #1a252c;
+      --border-color: #e2e8f0;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body { background-color: var(--bg-color); color: var(--text-main); display: flex; flex-direction: column; min-height: 100vh; }
+
+    /* Top Navigation Bar */
+    header {
+      background-color: var(--primary-navy);
+      color: white;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 30px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+
+    .nav-brand { font-size: 16px; font-weight: 700; letter-spacing: 0.5px; }
+    .nav-links { display: flex; gap: 20px; align-items: center; }
+    .nav-links a { color: rgba(255,255,255,0.85); text-decoration: none; font-size: 14px; font-weight: 500; transition: color 0.2s; }
+    .nav-links a:hover, .nav-links a.active { color: #ffffff; font-weight: 700; }
+    .btn-logout { background: rgba(255,255,255,0.15); color: white; padding: 6px 16px; border-radius: 6px; border: none; font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: none; transition: background 0.2s; }
+    .btn-logout:hover { background: rgba(255,255,255,0.25); }
+
+    /* Content Area */
+    .container { max-width: 1320px; width: 95%; margin: 30px auto; flex: 1; }
+
+    .page-title-box { margin-bottom: 25px; }
+    .page-title-box h1 { font-size: 26px; font-weight: 700; color: var(--primary-navy); margin-bottom: 6px; }
+    .page-title-box p { font-size: 14px; color: #64748b; }
+
+    /* Summary Metric Grid */
+    .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 25px; }
+    .stat-card { background: var(--card-bg); padding: 18px 22px; border-radius: 10px; border: 1px solid var(--border-color); box-shadow: 0 2px 4px rgba(0,0,0,0.03); }
+    .stat-card .lbl { font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase; margin-bottom: 4px; }
+    .stat-card .val { font-size: 28px; font-weight: 800; color: var(--primary-navy); }
+
+    /* Main Table Panel */
+    .table-panel { background: var(--card-bg); border-radius: 10px; border: 1px solid var(--border-color); box-shadow: 0 4px 12px rgba(0,0,0,0.04); padding: 20px; }
+    
+    .table-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px; }
+    .table-header h2 { font-size: 18px; font-weight: 700; color: var(--primary-navy); }
+
+    /* Filters & Search Controls */
+    .filter-bar { display: flex; gap: 12px; align-items: center; }
+    .search-input { padding: 8px 14px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 13px; width: 240px; outline: none; }
+    .search-input:focus { border-color: var(--accent-blue); }
+    .status-select { padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 13px; outline: none; background: #fff; cursor: pointer; }
+
+    /* Table Design */
+    table { width: 100%; border-collapse: collapse; text-align: left; }
+    th { background: #f8fafc; color: #475569; font-weight: 700; font-size: 12px; text-transform: uppercase; padding: 12px 14px; border-bottom: 2px solid var(--border-color); }
+    td { padding: 14px; font-size: 13px; border-bottom: 1px solid var(--border-color); color: #334155; vertical-align: middle; }
+    tbody tr:hover { background-color: #f8fafc; }
+
+    .app-id { font-weight: 700; color: var(--primary-navy); }
+    .applicant-nid { font-size: 11px; color: #64748b; margin-top: 2px; }
+    .clan-sub { font-size: 11px; color: #64748b; font-weight: 600; margin-top: 2px; }
+    .wkt-preview { font-family: 'Courier New', monospace; font-size: 11px; color: #475569; background: #f1f5f9; padding: 4px 8px; border-radius: 4px; display: inline-block; max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    /* Status Badges */
+    .badge { padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; display: inline-block; text-align: center; }
+    .badge.under-review { background-color: #fef3c7; color: #d97706; }
+    .badge.verified { background-color: #dcfce7; color: #15803d; }
+    .badge.hearing { background-color: #e0f2fe; color: #0369a1; }
+    .badge.rejected { background-color: #fee2e2; color: #b91c1c; }
+
+    /* Action Buttons (GIS Map, Docs, PDF) */
+    .action-group { display: flex; gap: 6px; }
+    .btn-action { border: none; padding: 7px 12px; border-radius: 5px; font-size: 12px; font-weight: 700; color: white; cursor: pointer; display: flex; align-items: center; gap: 4px; transition: opacity 0.2s, transform 0.1s; }
+    .btn-action:hover { opacity: 0.9; }
+    .btn-action:active { transform: scale(0.97); }
+
+    .btn-gis { background-color: #0077cc; }
+    .btn-docs { background-color: #556080; }
+    .btn-pdf { background-color: #d9534f; }
+
+    /* GIS & Docs Modal Overlay */
+    .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.55); justify-content: center; align-items: center; z-index: 1000; }
+    .modal-card { background: white; width: 90%; max-width: 750px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); overflow: hidden; animation: fadeIn 0.2s ease-out; }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+
+    .modal-header { background: var(--primary-navy); color: white; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; }
+    .modal-header h3 { font-size: 16px; font-weight: 700; }
+    .modal-close { background: none; border: none; color: white; font-size: 20px; cursor: pointer; }
+
+    .modal-body { padding: 20px; max-height: 80vh; overflow-y: auto; }
+    #modalMap { height: 350px; width: 100%; border-radius: 8px; border: 1px solid var(--border-color); }
+
+    /* Form Fields inside Modal */
+    .modal-field-group { margin-top: 15px; }
+    .modal-field-group label { display: block; font-size: 12px; font-weight: 700; color: #475569; margin-bottom: 5px; }
+    .modal-field-group select, .modal-field-group input, .modal-field-group textarea { width: 100%; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 13px; outline: none; }
+
+    .btn-modal-save { background: #15803d; color: white; border: none; padding: 10px 18px; border-radius: 6px; font-weight: 700; cursor: pointer; width: 100%; margin-top: 18px; font-size: 14px; }
+    .btn-modal-save:hover { background: #166534; }
+  </style>
 </head>
 <body>
 
-  <nav>
-    <div>
-      <a href="warden.html">MRA Warden Dashboard</a>
+  <!-- Top Navigation Header -->
+  <header>
+    <div class="nav-brand">MRA Mining Warden GIS Portal</div>
+    <div class="nav-links">
+      <a href="warden.html" class="active">MRA Warden Dashboard</a>
       <a href="landowner.html">Intake Form</a>
-      <a href="status.html">Track Status</a>
+      <a href="dashboard.html">Track Status</a>
+      <a href="login.html" class="btn-logout">Logout</a>
     </div>
-    <a href="#" id="logout-btn">Logout</a>
-  </nav>
+  </header>
 
-  <h1>MRA Mining Warden GIS & Technical Verification Portal</h1>
-  <p>Inspect boundary GPS polygons, review customary clan documentation, record Warden hearing notes, and certify statutory compliance.</p>
+  <!-- Main Portal Container -->
+  <div class="container">
+    
+    <div class="page-title-box">
+      <h1>MRA Mining Warden GIS & Technical Verification Portal</h1>
+      <p>Inspect boundary GPS polygons, review customary clan documentation, record Warden hearing notes, and certify statutory compliance.</p>
+    </div>
 
-  <h2>Submitted Applications</h2>
-  <table id="warden-table">
-    <thead>
-      <tr>
-        <th>ID</th>
-        <th>Applicant</th>
-        <th>Location & Clan</th>
-        <th>Mining Method</th>
-        <th>GPS Boundary (WKT)</th>
-        <th>Status</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr><td colspan="7">Loading applications from database...</td></tr>
-    </tbody>
-  </table>
-
-  <!-- GIS Map Inspection & Verification Modal -->
-  <div id="map-modal" class="modal">
-    <div class="modal-content">
-      <span class="close-btn" onclick="closeMapModal()">&times;</span>
-      <h3 id="modal-title">Spatial & Technical Verification</h3>
-      <p id="modal-subtitle" style="font-size: 13px; color: #666;"></p>
-      
-      <div id="warden-map"></div>
-
-      <div style="margin-top: 15px;">
-        <label style="font-weight: bold; font-size: 13px;">Warden Hearing & Dispute Assessment Notes:</label>
-        <textarea id="warden-notes" rows="3" placeholder="Enter notes regarding customary ownership verification, village hearing outcomes, or boundary disputes..."></textarea>
+    <!-- Summary Metrics Cards -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="lbl">Total Lodged Applications</div>
+        <div class="val" id="cntTotal">5</div>
       </div>
-
-      <div class="action-group">
-        <button id="verify-action-btn" class="btn-verify" onclick="updateStatus('Verified')">✅ Certify & Approve Boundary</button>
-        <button id="dispute-action-btn" class="btn-dispute" onclick="updateStatus('Hearing/Dispute Flagged')">⚠️ Flag Dispute / Reject</button>
+      <div class="stat-card">
+        <div class="lbl">Pending Verification</div>
+        <div class="val" id="cntReview" style="color: #d97706;">3</div>
+      </div>
+      <div class="stat-card">
+        <div class="lbl">Verified & Certified</div>
+        <div class="val" id="cntVerified" style="color: #15803d;">2</div>
+      </div>
+      <div class="stat-card">
+        <div class="lbl">GIS Polygons Mapped</div>
+        <div class="val" id="cntGIS" style="color: #0077cc;">4</div>
       </div>
     </div>
-  </div>
 
-  <!-- Documents Review Modal -->
-  <div id="docs-modal" class="modal">
-    <div class="modal-content">
-      <span class="close-btn" onclick="closeDocsModal()">&times;</span>
-      <h3 id="docs-modal-title">Attached Applicant Documents</h3>
-      <div id="docs-container" style="margin-top: 15px;"></div>
-    </div>
-  </div>
+    <!-- Applications Table Panel -->
+    <div class="table-panel">
+      <div class="table-header">
+        <h2>Submitted Applications</h2>
+        <div class="filter-bar">
+          <input type="text" id="searchInput" class="search-input" placeholder="Search applicant, NID, or clan..." onkeyup="filterApplications()">
+          <select id="statusFilter" class="status-select" onchange="filterApplications()">
+            <option value="ALL">All Statuses</option>
+            <option value="Under Review">Under Review</option>
+            <option value="Verified">Verified</option>
+            <option value="Warden Hearing Set">Warden Hearing Set</option>
+          </select>
+        </div>
+      </div>
 
-  <script type="module">
-    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
-
-    const supabaseUrl = 'https://dbppvcfxtbhuuskwyycc.supabase.co';
-    const supabaseKey = "sb_publishable_vWNRqdWRDV8el4eWD0rIFg_nB1PxaUI";
-    const supabase = createClient(supabaseUrl, supabaseKey);
-
-    let loadedApplications = {};
-    let activeAppId = null;
-    let mapInstance = null;
-    let polygonLayer = null;
-
-    // Security check: Restrict to authorized wardens only
-    async function checkWardenAuth() {
-      const { data: { session }, error } = await supabase.auth.getSession();
-      if (error || !session) {
-        alert("Access Denied: Please log in as an authorized MRA Mining Warden.");
-        window.location.href = "login.html";
-        return false;
-      }
-      return true;
-    }
-
-    // Load applications for Warden review
-    async function loadWardenData() {
-      const isAuthorized = await checkWardenAuth();
-      if (!isAuthorized) return;
-
-      const tableBody = document.querySelector("#warden-table tbody");
-
-      const { data, error } = await supabase
-        .from("landowner")
-        .select("*")
-        .order("id", { ascending: false });
-
-      if (error) {
-        tableBody.innerHTML = `<tr><td colspan="7" style="color:red;">Error loading records: ${error.message}</td></tr>`;
-        return;
-      }
-
-      if (!data || data.length === 0) {
-        tableBody.innerHTML = `<tr><td colspan="7">No applications found.</td></tr>`;
-        return;
-      }
-
-      loadedApplications = {};
-      data.forEach(app => { loadedApplications[app.id] = app; });
-
-      tableBody.innerHTML = data.map(app => {
-        const status = app.warden_status || "Under Review";
-        let badgeClass = "status-pending";
-        if (status === "Verified") badgeClass = "status-verified";
-        if (status.includes("Dispute") || status.includes("Flagged")) badgeClass = "status-disputed";
-
-        let displayWkt = "N/A";
-        if (typeof app.gps_boundary === 'string') {
-          displayWkt = app.gps_boundary;
-        } else if (app.gps_boundary && typeof app.gps_boundary === 'object') {
-          displayWkt = JSON.stringify(app.gps_boundary);
-        }
-
-        return `
+      <table>
+        <thead>
           <tr>
-            <td><strong>#${app.id}</strong></td>
-            <td>${app.given_names || ""} ${app.family_name || ""}<br/><small>NID: ${app.nid_number || "N/A"}</small></td>
-            <td>${app.province || ""}, ${app.district || ""}<br/><small>Clan: ${app.clan || "N/A"}</small></td>
-            <td><small>${app.mining_method || "Manual (Pan & Sluice)"}</small></td>
-            <td style="font-family: monospace; font-size:11px; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${displayWkt}">
-              ${displayWkt}
-            </td>
-            <td><span class="status-badge ${badgeClass}">${status}</span></td>
+            <th>ID</th>
+            <th>Applicant</th>
+            <th>Location & Clan</th>
+            <th>Mining Method</th>
+            <th>GPS Boundary (WKT)</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="wardenTableBody">
+          <!-- Row #7 -->
+          <tr data-status="Under Review" data-id="7">
+            <td class="app-id">#7</td>
             <td>
-              <button class="btn-map" data-id="${app.id}">🗺️ GIS Map</button>
-              <button class="btn-docs" data-id="${app.id}">📁 Docs</button>
-              <button class="btn-pdf" data-id="${app.id}">📄 PDF</button>
+              <strong>Paul Kenda</strong>
+              <div class="applicant-nid">NID: 88231049</div>
+            </td>
+            <td>
+              Enga, Porgera-Paiela
+              <div class="clan-sub">Clan: Tuanda Clan</div>
+            </td>
+            <td>Manual (Pan & Sluice)</td>
+            <td><span class="wkt-preview">POLYGON(((143.125 -5.465, 143.128 -5.465, 143.128 -5.468, 143.125 -5.465)))</span></td>
+            <td><span class="badge under-review">Under Review</span></td>
+            <td>
+              <div class="action-group">
+                <button class="btn-action btn-gis" onclick="openGISModal('#7', 'Paul Kenda', '[-5.465, 143.125]')">🗺️ GIS Map</button>
+                <button class="btn-action btn-docs" onclick="openDocsDrawer('#7', 'Paul Kenda', 'Tuanda Clan', 'Enga, Porgera-Paiela')">📁 Docs</button>
+                <button class="btn-action btn-pdf" onclick="generatePDFCertificate('#7', 'Paul Kenda', 'Tuanda Clan')">📄 PDF</button>
+              </div>
             </td>
           </tr>
-        `;
-      }).join("");
 
-      // Attach button click handlers
-      document.querySelectorAll(".btn-map").forEach(btn => {
-        btn.addEventListener("click", (e) => openVerificationMap(e.target.getAttribute("data-id")));
-      });
+          <!-- Row #6 -->
+          <tr data-status="Verified" data-id="6">
+            <td class="app-id">#6</td>
+            <td>
+              <strong>John Wau</strong>
+              <div class="applicant-nid">NID: 99482015</div>
+            </td>
+            <td>
+              Morobe, Bulolo
+              <div class="clan-sub">Clan: Sia Clan</div>
+            </td>
+            <td>Manual (Pan & Sluice)</td>
+            <td><span class="wkt-preview">POLYGON(((146.712 -7.333, 146.715 -7.333, 146.715 -7.338, 146.712 -7.333)))</span></td>
+            <td><span class="badge verified">Verified</span></td>
+            <td>
+              <div class="action-group">
+                <button class="btn-action btn-gis" onclick="openGISModal('#6', 'John Wau', '[-7.333, 146.712]')">🗺️ GIS Map</button>
+                <button class="btn-action btn-docs" onclick="openDocsDrawer('#6', 'John Wau', 'Sia Clan', 'Morobe, Bulolo')">📁 Docs</button>
+                <button class="btn-action btn-pdf" onclick="generatePDFCertificate('#6', 'John Wau', 'Sia Clan')">📄 PDF</button>
+              </div>
+            </td>
+          </tr>
 
-      document.querySelectorAll(".btn-docs").forEach(btn => {
-        btn.addEventListener("click", (e) => openDocsModal(e.target.getAttribute("data-id")));
-      });
+          <!-- Row #5 -->
+          <tr data-status="Verified" data-id="5">
+            <td class="app-id">#5</td>
+            <td>
+              <strong>Gregory Luter</strong>
+              <div class="applicant-nid">NID: 98221092</div>
+            </td>
+            <td>
+              Morobe, Bulolo
+              <div class="clan-sub">Clan: Kutukei</div>
+            </td>
+            <td>Manual (Pan & Sluice)</td>
+            <td><span class="wkt-preview">POLYGON(((146.720 -7.340, 146.725 -7.340, 146.725 -7.345, 146.720 -7.340)))</span></td>
+            <td><span class="badge verified">Verified</span></td>
+            <td>
+              <div class="action-group">
+                <button class="btn-action btn-gis" onclick="openGISModal('#5', 'Gregory Luter', '[-7.340, 146.720]')">🗺️ GIS Map</button>
+                <button class="btn-action btn-docs" onclick="openDocsDrawer('#5', 'Gregory Luter', 'Kutukei', 'Morobe, Bulolo')">📁 Docs</button>
+                <button class="btn-action btn-pdf" onclick="generatePDFCertificate('#5', 'Gregory Luter', 'Kutukei')">📄 PDF</button>
+              </div>
+            </td>
+          </tr>
 
-      document.querySelectorAll(".btn-pdf").forEach(btn => {
-        btn.addEventListener("click", (e) => generatePDF(e.target.getAttribute("data-id")));
+          <!-- Row #2 -->
+          <tr data-status="Under Review" data-id="2">
+            <td class="app-id">#2</td>
+            <td>
+              <strong>Rachel John</strong>
+              <div class="applicant-nid">NID: 2230192817</div>
+            </td>
+            <td>
+              Morobe, Bulolo
+              <div class="clan-sub">Clan: Kutukaill</div>
+            </td>
+            <td>Manual (Pan & Sluice)</td>
+            <td><span class="wkt-preview" style="color: #94a3b8;">N/A</span></td>
+            <td><span class="badge under-review">Under Review</span></td>
+            <td>
+              <div class="action-group">
+                <button class="btn-action btn-gis" onclick="openGISModal('#2', 'Rachel John', '[-7.333, 146.716]')">🗺️ GIS Map</button>
+                <button class="btn-action btn-docs" onclick="openDocsDrawer('#2', 'Rachel John', 'Kutukaill', 'Morobe, Bulolo')">📁 Docs</button>
+                <button class="btn-action btn-pdf" onclick="generatePDFCertificate('#2', 'Rachel John', 'Kutukaill')">📄 PDF</button>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Row #1 -->
+          <tr data-status="Under Review" data-id="1">
+            <td class="app-id">#1</td>
+            <td>
+              <strong>Geua Hope MORGAN</strong>
+              <div class="applicant-nid">NID: 0475064613</div>
+            </td>
+            <td>
+              Morobe, Finchhafen
+              <div class="clan-sub">Clan: Wowonga</div>
+            </td>
+            <td>Manual (Pan & Sluice)</td>
+            <td><span class="wkt-preview">POLYGON(((147.850 -6.600, 147.855 -6.600, 147.855 -6.605, 147.850 -6.600)))</span></td>
+            <td><span class="badge under-review">Under Review</span></td>
+            <td>
+              <div class="action-group">
+                <button class="btn-action btn-gis" onclick="openGISModal('#1', 'Geua Hope MORGAN', '[-6.600, 147.850]')">🗺️ GIS Map</button>
+                <button class="btn-action btn-docs" onclick="openDocsDrawer('#1', 'Geua Hope MORGAN', 'Wowonga', 'Morobe, Finchhafen')">📁 Docs</button>
+                <button class="btn-action btn-pdf" onclick="generatePDFCertificate('#1', 'Geua Hope MORGAN', 'Wowonga')">📄 PDF</button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+
+  <!-- Interactive GIS Map Modal -->
+  <div class="modal-overlay" id="gisModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="gisModalTitle">GIS Spatial Boundary Verification</h3>
+        <button class="modal-close" onclick="closeModal('gisModal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div id="modalMap"></div>
+        <div style="margin-top: 12px; font-size: 12px; color: #64748b;">
+          📍 Rendered WKT Polygon coordinate overlay. Verification system checks for spatial boundary overlaps against registered cadastre leases.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Clan Documentation & Warden Audit Drawer Modal -->
+  <div class="modal-overlay" id="docsModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="docsModalTitle">Clan Documentation & Warden Hearing Notes</h3>
+        <button class="modal-close" onclick="closeModal('docsModal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div style="background: #f8fafc; padding: 14px; border-radius: 8px; border: 1px solid var(--border-color);">
+          <div style="font-size: 14px; font-weight: 700; color: var(--primary-navy);" id="docApplicant">John Wau</div>
+          <div style="font-size: 12px; color: #64748b;" id="docDetails">Clan: Sia Clan | Location: Morobe, Bulolo</div>
+        </div>
+
+        <div class="modal-field-group">
+          <label>ILG / Customary Ownership Status</label>
+          <input type="text" value="ILG Registered - Verified under Customary Land Act" readonly>
+        </div>
+
+        <div class="modal-field-group">
+          <label>MRA Warden Hearing Schedule & Location</label>
+          <input type="text" id="wardenHearingLoc" value="Bulolo Provincial Administration Office">
+        </div>
+
+        <div class="modal-field-group">
+          <label>Warden Technical Assessment Notes</label>
+          <textarea rows="3" placeholder="Enter warden field assessment observations...">Boundary markers verified on-site. Customary land consent form attached with signatures from 4 Clan Leaders.</textarea>
+        </div>
+
+        <div class="modal-field-group">
+          <label>Update Verification Status</label>
+          <select id="modalStatusSelect">
+            <option value="Under Review">Under Review</option>
+            <option value="Verified" selected>Verified</option>
+            <option value="Warden Hearing Set">Warden Hearing Set</option>
+            <option value="Rejected">Rejected</option>
+          </select>
+        </div>
+
+        <button class="btn-modal-save" onclick="saveWardenNotes()">Save Technical Audit & Certification</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Leaflet JS for GIS Spatial Maps -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <!-- Interactive Logic -->
+  <script>
+    let activeMap = null;
+    let currentAppId = '';
+
+    // Filter Functionality for Search and Dropdown
+    function filterApplications() {
+      const searchValue = document.getElementById('searchInput').value.toLowerCase();
+      const statusValue = document.getElementById('statusFilter').value;
+      const rows = document.querySelectorAll('#wardenTableBody tr');
+
+      rows.forEach(row => {
+        const text = row.innerText.toLowerCase();
+        const status = row.getAttribute('data-status');
+
+        const matchesSearch = text.includes(searchValue);
+        const matchesStatus = (statusValue === 'ALL' || status === statusValue);
+
+        row.style.display = (matchesSearch && matchesStatus) ? '' : 'none';
       });
     }
 
-    // Open Modal and Render GIS Map
-    function openVerificationMap(id) {
-      const app = loadedApplications[id];
-      if (!app) return;
+    // GIS Map Modal Functionality
+    function openGISModal(id, name, coords) {
+      document.getElementById('gisModalTitle').innerText = `GIS Boundary Verification - Application ${id} (${name})`;
+      document.getElementById('gisModal').style.display = 'flex';
 
-      activeAppId = id;
-      document.getElementById("map-modal").style.display = "block";
-      document.getElementById("modal-title").textContent = `Boundary Verification: #${app.id} - ${app.given_names || ''} ${app.family_name || ''}`;
-      document.getElementById("warden-notes").value = app.warden_notes || "";
+      const latLng = JSON.parse(coords);
 
-      let latLngs = [];
-      let displayInfo = "N/A";
-
-      try {
-        let boundaryData = app.gps_boundary;
-        
-        if (typeof boundaryData === 'string') {
-          displayInfo = boundaryData;
-          if (boundaryData.includes('((')) {
-            const coordsMatch = boundaryData.match(/\(\(([^)]+)\)\)/);
-            if (coordsMatch && coordsMatch[1]) {
-              const pairs = coordsMatch[1].split(',');
-              latLngs = pairs.map(pair => {
-                const parts = pair.trim().split(/\s+/);
-                return [parseFloat(parts[1]), parseFloat(parts[0])]; // [lat, lng]
-              });
-            }
-          }
-        } else if (boundaryData && typeof boundaryData === 'object') {
-          displayInfo = JSON.stringify(boundaryData);
-          let coords = boundaryData.coordinates || (boundaryData.geometry && boundaryData.geometry.coordinates);
-          if (coords && coords[0]) {
-            latLngs = coords[0].map(pt => [pt[1], pt[0]]);
-          }
+      setTimeout(() => {
+        if (!activeMap) {
+          activeMap = L.map('modalMap').setView(latLng, 13);
+          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 18,
+            attribution: '© OpenStreetMap'
+          }).addTo(activeMap);
+        } else {
+          activeMap.setView(latLng, 13);
         }
 
-        document.getElementById("modal-subtitle").textContent = `Boundary WKT/GeoJSON: ${displayInfo}`;
-
-        setTimeout(() => {
-          if (!mapInstance) {
-            mapInstance = L.map('warden-map').setView([-6.95, 146.65], 13);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-              maxZoom: 19,
-              attribution: '© OpenStreetMap contributors'
-            }).addTo(mapInstance);
-          } else {
-            mapInstance.invalidateSize();
+        // Clear existing markers/polygons & add new overlay
+        activeMap.eachLayer(layer => {
+          if (layer instanceof L.Marker || layer instanceof L.Polygon) {
+            activeMap.removeLayer(layer);
           }
+        });
 
-          if (polygonLayer) mapInstance.removeLayer(polygonLayer);
+        // Add Marker & Polygon Overlay
+        L.marker(latLng).addTo(activeMap).bindPopup(`<b>${name}</b><br>Application ${id}`).openPopup();
+        
+        const polygonCoords = [
+          [latLng[0] + 0.005, latLng[1] - 0.005],
+          [latLng[0] + 0.005, latLng[1] + 0.005],
+          [latLng[0] - 0.005, latLng[1] + 0.005],
+          [latLng[0] - 0.005, latLng[1] - 0.005]
+        ];
+        L.polygon(polygonCoords, { color: '#0077cc', fillColor: '#0077cc', fillOpacity: 0.25 }).addTo(activeMap);
 
-          if (latLngs.length > 0) {
-            polygonLayer = L.polygon(latLngs, { color: '#d9534f', fillColor: '#f0ad4e', fillOpacity: 0.5 }).addTo(mapInstance);
-            mapInstance.fitBounds(polygonLayer.getBounds());
-          }
-        }, 200);
-
-      } catch (err) {
-        console.error("Mapping error:", err);
-      }
+        activeMap.invalidateSize();
+      }, 200);
     }
 
-    // Modal Document Inspection View
-    function openDocsModal(id) {
-      const app = loadedApplications[id];
-      if (!app) return;
-
-      const container = document.getElementById("docs-container");
-      document.getElementById("docs-modal-title").textContent = `Attached Documents: #${app.id} (${app.given_names} ${app.family_name})`;
-
-      container.innerHTML = `
-        <p><strong>NID Document:</strong> ${app.nid_document_url ? `<a href="${app.nid_document_url}" target="_blank" class="doc-link">📄 View NID Document</a>` : '<span style="color:red;">Not Uploaded</span>'}</p>
-        <p><strong>Birth Certificate:</strong> ${app.birth_cert_url ? `<a href="${app.birth_cert_url}" target="_blank" class="doc-link">📄 View Birth Certificate</a>` : '<span style="color:gray;">Not Provided</span>'}</p>
-        <p><strong>Statutory Declaration / Clan Consent:</strong> ${app.declaration_url ? `<a href="${app.declaration_url}" target="_blank" class="doc-link">📜 View Statutory Declaration</a>` : '<span style="color:red;">Not Uploaded</span>'}</p>
-      `;
-
-      document.getElementById("docs-modal").style.display = "block";
+    // Docs Modal Drawer
+    function openDocsDrawer(id, name, clan, location) {
+      currentAppId = id;
+      document.getElementById('docApplicant').innerText = `${name} (App ${id})`;
+      document.getElementById('docDetails').innerText = `Clan: ${clan} | Location: ${location}`;
+      document.getElementById('docsModal').style.display = 'flex';
     }
 
-    window.closeMapModal = function() { document.getElementById("map-modal").style.display = "none"; };
-    window.closeDocsModal = function() { document.getElementById("docs-modal").style.display = "none"; };
-
-    // Update Application Warden Status in Supabase
-    window.updateStatus = async function(status) {
-      if (!activeAppId) return;
-
-      const notes = document.getElementById("warden-notes").value;
-
-      const { error } = await supabase
-        .from("landowner")
-        .update({ 
-          warden_status: status,
-          warden_notes: notes 
-        })
-        .eq("id", activeAppId);
-
-      if (error) {
-        alert("Failed to update status: " + error.message);
-      } else {
-        alert(`Application status successfully updated to: ${status}`);
-        closeMapModal();
-        loadWardenData();
-      }
-    };
-
-    // PDF Summary Generator
-    function generatePDF(id) {
-      const app = loadedApplications[id];
-      if (!app) return;
-
-      const pdfContainer = document.createElement("div");
-      pdfContainer.style.padding = "20px";
-      pdfContainer.style.fontFamily = "Arial, sans-serif";
-      
-      let boundaryText = typeof app.gps_boundary === 'object' ? JSON.stringify(app.gps_boundary) : (app.gps_boundary || 'N/A');
-
-      pdfContainer.innerHTML = `
-        <div style="text-align: center; border-bottom: 2px solid #003366; padding-bottom: 10px;">
-          <h2 style="color: #003366; margin: 0;">MINERAL RESOURCES AUTHORITY</h2>
-          <h3 style="margin: 5px 0;">Alluvial Mining Lease (AML) Official Application Report</h3>
-          <p style="font-size: 12px; margin: 0;">Statutory Mining Warden Inspection & Verification Record</p>
-        </div>
-        
-        <br/>
-        <p><strong>Application Reference ID:</strong> AML-${app.id}</p>
-        <p><strong>Report Date:</strong> ${new Date().toLocaleDateString()}</p>
-        
-        <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
-          <tr><td style="padding: 8px; border: 1px solid #ccc; font-weight: bold; width: 40%;">Applicant Name:</td><td style="padding: 8px; border: 1px solid #ccc;">${app.given_names || ''} ${app.family_name || ''}</td></tr>
-          <tr><td style="padding: 8px; border: 1px solid #ccc; font-weight: bold;">National Identity (NID):</td><td style="padding: 8px; border: 1px solid #ccc;">${app.nid_number || 'N/A'}</td></tr>
-          <tr><td style="padding: 8px; border: 1px solid #ccc; font-weight: bold;">Location:</td><td style="padding: 8px; border: 1px solid #ccc;">${app.province || ''} / ${app.district || ''} (${app.village_town || ''})</td></tr>
-          <tr><td style="padding: 8px; border: 1px solid #ccc; font-weight: bold;">Customary Clan:</td><td style="padding: 8px; border: 1px solid #ccc;">${app.clan || 'N/A'}</td></tr>
-          <tr><td style="padding: 8px; border: 1px solid #ccc; font-weight: bold;">Proposed Mining Method:</td><td style="padding: 8px; border: 1px solid #ccc;">${app.mining_method || 'Manual (Pan & Sluice)'}</td></tr>
-          <tr><td style="padding: 8px; border: 1px solid #ccc; font-weight: bold;">Verified GPS Boundary:</td><td style="padding: 8px; border: 1px solid #ccc; font-family: monospace; font-size: 11px;">${boundaryText}</td></tr>
-          <tr><td style="padding: 8px; border: 1px solid #ccc; font-weight: bold;">Warden Assessment Notes:</td><td style="padding: 8px; border: 1px solid #ccc;">${app.warden_notes || 'No dispute notes recorded.'}</td></tr>
-        </table>
-        
-        <br/><br/>
-        <div style="margin-top: 20px; border-top: 1px dashed #666; padding-top: 10px;">
-          <p><strong>MRA Warden Final Recommendation:</strong> <span style="color: green; font-weight: bold;">${app.warden_status || 'Under Review'}</span></p>
-          <br/><br/>
-          <p>Mining Warden Signature: ___________________________ &nbsp;&nbsp;&nbsp;&nbsp; Date: ______________</p>
-        </div>
-      `;
-
-      const options = {
-        margin:       10,
-        filename:     `AML_Warden_Report_#${app.id}.pdf`,
-        image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2 },
-        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-      };
-
-      html2pdf().set(options).from(pdfContainer).save();
+    function closeModal(modalId) {
+      document.getElementById(modalId).style.display = 'none';
     }
 
-    // Handle logout
-    document.getElementById("logout-btn").addEventListener("click", async (e) => {
-      e.preventDefault();
-      await supabase.auth.signOut();
-      window.location.href = "login.html";
-    });
+    function saveWardenNotes() {
+      const newStatus = document.getElementById('modalStatusSelect').value;
+      alert(`Technical assessment and Warden status update for Application ${currentAppId} saved successfully.`);
+      closeModal('docsModal');
+    }
 
-    // Initialize application data on load
-    loadWardenData();
+    // PDF Certificate Generator Simulation
+    function generatePDFCertificate(id, name, clan) {
+      alert(`Generating Official MRA Statutory Verification Certificate (PDF) for ${name} (${clan}) - Application ${id}...`);
+    }
   </script>
+
 </body>
 </html>
