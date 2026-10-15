@@ -95,7 +95,7 @@
       text-transform: uppercase;
     }
 
-    .form-group input, .form-group select {
+    .form-group input, .form-group select, .form-group textarea {
       padding: 10px;
       border: 1px solid var(--border);
       border-radius: 4px;
@@ -104,12 +104,30 @@
       transition: border-color 0.2s;
     }
 
-    .form-group input:focus, .form-group select:focus {
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
       border-color: var(--primary);
     }
 
     .form-group.full-width {
       grid-column: 1 / -1;
+    }
+
+    .checkbox-group {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .checkbox-group input {
+      margin-top: 3px;
+    }
+
+    .checkbox-group label {
+      text-transform: none;
+      font-size: 13px;
+      color: var(--text-main);
+      font-weight: normal;
     }
 
     .btn-submit {
@@ -203,6 +221,8 @@
       <h3>Submit New Alluvial Mining Lease Application</h3>
       <form id="landowner-form">
         <div class="form-grid">
+          
+          <!-- Personal Identification -->
           <div class="form-group">
             <label>NID Number</label>
             <input type="text" id="nid_number" placeholder="e.g. 12345678" required />
@@ -242,6 +262,8 @@
               <option value="Female">Female</option>
             </select>
           </div>
+
+          <!-- Location & Customary Details -->
           <div class="form-group">
             <label>Province</label>
             <input type="text" id="province" placeholder="e.g. Morobe" required />
@@ -264,7 +286,7 @@
           </div>
           <div class="form-group">
             <label>Customary Clan</label>
-            <input type="text" id="clan" placeholder="Clan name" />
+            <input type="text" id="clan" placeholder="Clan name" required />
           </div>
           <div class="form-group">
             <label>Tribe</label>
@@ -272,7 +294,7 @@
           </div>
           <div class="form-group">
             <label>Mobile Number</label>
-            <input type="text" id="mobile_number" placeholder="7xxxxxxx" />
+            <input type="text" id="mobile_number" placeholder="7xxxxxxx" required />
           </div>
           <div class="form-group">
             <label>Education Level</label>
@@ -295,10 +317,46 @@
               <option value="Divorced">Divorced</option>
             </select>
           </div>
+
+          <!-- NEW: AML Operational Details -->
+          <div class="form-group">
+            <label>Mineral Type</label>
+            <input type="text" id="mineral_type" value="Alluvial Gold" readonly />
+          </div>
+          <div class="form-group">
+            <label>Mining Method</label>
+            <select id="mining_method" required>
+              <option value="Manual (Pan & Sluice box)">Manual (Pan & Sluice box)</option>
+              <option value="Semi-Mechanized (Suction pump / Excavator)">Semi-Mechanized (Suction pump / Excavator)</option>
+              <option value="Fully Mechanized">Fully Mechanized</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Upload Statutory Declaration / Clan Consent</label>
+            <input type="file" id="declaration_file" accept=".pdf, .jpg, .jpeg, .png" required />
+          </div>
+
           <div class="form-group full-width">
             <label>GPS Boundary (WKT Polygon or GeoJSON)</label>
             <input type="text" id="gps_boundary" placeholder='POLYGON(((146.6 -6.9, 146.7 -6.9, 146.7 -7.0, 146.6 -7.0, 146.6 -6.9)))' required />
           </div>
+
+          <!-- NEW: Statutory Acknowledgments -->
+          <div class="form-group full-width">
+            <div class="checkbox-group">
+              <input type="checkbox" id="ack_size" required />
+              <label for="ack_size">I confirm the requested lease area <strong>does not exceed 5 hectares</strong>.</label>
+            </div>
+            <div class="checkbox-group">
+              <input type="checkbox" id="ack_depth" required />
+              <label for="ack_depth">I confirm mining operations will extend no further than 20m from the river bank and <strong>maximum 10m depth</strong>.</label>
+            </div>
+            <div class="checkbox-group">
+              <input type="checkbox" id="ack_chemicals" required />
+              <label for="ack_chemicals">I understand that explosives are strictly prohibited and chemical use (mercury) is restricted/prohibited.</label>
+            </div>
+          </div>
+
         </div>
         <button type="submit" class="btn-submit">Submit Application</button>
         <div id="form-message"></div>
@@ -380,37 +438,32 @@
       try {
         const nidFile = document.getElementById("nid_file").files[0];
         const birthFile = document.getElementById("birth_cert_file").files[0];
+        const declFile = document.getElementById("declaration_file").files[0];
         const timestamp = Date.now();
 
         let nidUrl = null;
         let birthCertUrl = null;
+        let declUrl = null;
 
         if (nidFile) {
           const fileName = `nid_${timestamp}_${nidFile.name}`;
-          const { error: uploadError } = await supabase.storage
-            .from('aml-documents')
-            .upload(fileName, nidFile);
-
+          const { error: uploadError } = await supabase.storage.from('aml-documents').upload(fileName, nidFile);
           if (uploadError) throw new Error("NID Upload failed: " + uploadError.message);
-
-          const { data: publicUrlData } = supabase.storage
-            .from('aml-documents')
-            .getPublicUrl(fileName);
-          nidUrl = publicUrlData.publicUrl;
+          nidUrl = supabase.storage.from('aml-documents').getPublicUrl(fileName).data.publicUrl;
         }
 
         if (birthFile) {
           const fileName = `birth_${timestamp}_${birthFile.name}`;
-          const { error: uploadError } = await supabase.storage
-            .from('aml-documents')
-            .upload(fileName, birthFile);
-
+          const { error: uploadError } = await supabase.storage.from('aml-documents').upload(fileName, birthFile);
           if (uploadError) throw new Error("Birth Certificate Upload failed: " + uploadError.message);
+          birthCertUrl = supabase.storage.from('aml-documents').getPublicUrl(fileName).data.publicUrl;
+        }
 
-          const { data: publicUrlData } = supabase.storage
-            .from('aml-documents')
-            .getPublicUrl(fileName);
-          birthCertUrl = publicUrlData.publicUrl;
+        if (declFile) {
+          const fileName = `decl_${timestamp}_${declFile.name}`;
+          const { error: uploadError } = await supabase.storage.from('aml-documents').upload(fileName, declFile);
+          if (uploadError) throw new Error("Statutory Declaration Upload failed: " + uploadError.message);
+          declUrl = supabase.storage.from('aml-documents').getPublicUrl(fileName).data.publicUrl;
         }
 
         const formData = {
@@ -433,9 +486,11 @@
           occupation: document.getElementById("occupation").value,
           denomination: document.getElementById("denomination").value,
           marital_status: document.getElementById("marital_status").value,
+          mining_method: document.getElementById("mining_method").value,
           gps_boundary: document.getElementById("gps_boundary").value,
           nid_document_url: nidUrl,
           birth_cert_url: birthCertUrl,
+          declaration_url: declUrl,
           warden_status: "Under Review"
         };
 
