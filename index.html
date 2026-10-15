@@ -1,117 +1,551 @@
 <!DOCTYPE html>
-
 <html lang="en">
-
 <head>
-
   <meta charset="UTF-8">
-
-  <title>Alluvial Mining Lease Portal</title>
-
+  <title>Direct Alluvial Mining Portal | PNG Customary Landowners & Wardens</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
+    :root {
+      --primary: #1e3a2b;         /* Deep Forest Earth Green */
+      --primary-dark: #12241a;
+      --accent: #d97706;          /* Warm Earth Ochre Gold */
+      --accent-light: #fef3c7;
+      --bg-color: #f8fafc;
+      --card-bg: #ffffff;
+      --text-main: #1e293b;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+    }
 
-    body { font-family: Arial, sans-serif; margin: 20px; }
+    * {
+      box-sizing: border-box;
+    }
 
-    h1 { color: #2c3e50; }
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      margin: 0;
+      padding: 0;
+      line-height: 1.6;
+    }
 
-    nav { margin-top: 20px; }
+    /* Top Navigation Header */
+    header {
+      background-color: var(--primary);
+      color: white;
+      padding: 16px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-logo {
+      width: 38px;
+      height: 38px;
+      background: var(--accent);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      font-size: 20px;
+      color: white;
+    }
+
+    .brand h2 {
+      margin: 0;
+      font-size: 18px;
+      letter-spacing: 0.5px;
+    }
+
+    .brand span {
+      font-size: 11px;
+      color: #a7f3d0;
+      display: block;
+      font-weight: 500;
+    }
+
+    nav {
+      display: flex;
+      gap: 20px;
+    }
 
     nav a {
-
-      display: inline-block;
-
-      margin-right: 20px;
-
-      padding: 10px 15px;
-
-      background: #3498db;
-
-      color: white;
-
+      color: #e2e8f0;
       text-decoration: none;
-
-      border-radius: 5px;
-
+      font-weight: 600;
+      font-size: 14px;
+      padding: 8px 14px;
+      border-radius: 6px;
+      transition: all 0.2s;
     }
 
-    nav a:hover { background: #2980b9; }
-
-    .info {
-
-      margin-top: 30px;
-
-      line-height: 1.6;
-
+    nav a:hover, nav a.active {
+      background: rgba(255,255,255,0.1);
+      color: var(--accent);
     }
 
+    /* Hero Section */
+    .hero {
+      background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
+      color: white;
+      padding: 60px 20px 80px;
+      text-align: center;
+      position: relative;
+    }
+
+    .hero-content {
+      max-width: 850px;
+      margin: 0 auto;
+    }
+
+    .hero-tag {
+      background: rgba(217, 119, 6, 0.2);
+      color: var(--accent-light);
+      border: 1px solid var(--accent);
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      display: inline-block;
+      margin-bottom: 20px;
+    }
+
+    .hero h1 {
+      font-size: 38px;
+      margin: 0 0 16px;
+      font-weight: 800;
+      line-height: 1.25;
+    }
+
+    .hero p {
+      font-size: 16px;
+      color: #cbd5e1;
+      max-width: 700px;
+      margin: 0 auto 35px;
+    }
+
+    /* Quick Lookup Box inside Hero */
+    .hero-search {
+      background: rgba(255,255,255,0.12);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,0.2);
+      padding: 10px;
+      border-radius: 12px;
+      max-width: 520px;
+      margin: 0 auto;
+      display: flex;
+      gap: 10px;
+    }
+
+    .hero-search input {
+      flex: 1;
+      border: none;
+      padding: 12px 16px;
+      border-radius: 8px;
+      outline: none;
+      font-size: 14px;
+    }
+
+    .hero-search button {
+      background: var(--accent);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .hero-search button:hover {
+      background: #b45309;
+    }
+
+    /* Stat Banner */
+    .stat-container {
+      max-width: 1000px;
+      margin: -40px auto 40px;
+      padding: 0 20px;
+      position: relative;
+      z-index: 10;
+    }
+
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+
+    .stat-card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.06);
+      border: 1px solid var(--border);
+    }
+
+    .stat-card h3 {
+      font-size: 32px;
+      color: var(--primary);
+      margin: 0;
+      font-weight: 800;
+    }
+
+    .stat-card p {
+      margin: 4px 0 0;
+      font-size: 13px;
+      color: var(--text-muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Main Grid Cards */
+    .container {
+      max-width: 1100px;
+      margin: 0 auto 60px;
+      padding: 0 20px;
+    }
+
+    .section-title {
+      text-align: center;
+      margin-bottom: 35px;
+    }
+
+    .section-title h2 {
+      font-size: 26px;
+      color: var(--primary);
+      margin: 0 0 8px;
+    }
+
+    .section-title p {
+      color: var(--text-muted);
+      margin: 0;
+      font-size: 15px;
+    }
+
+    .action-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 25px;
+    }
+
+    .action-card {
+      background: white;
+      border-radius: 14px;
+      padding: 30px;
+      border: 1px solid var(--border);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .action-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 5px;
+      background: var(--border);
+      transition: background 0.3s;
+    }
+
+    .action-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 15px 30px rgba(0,0,0,0.08);
+    }
+
+    .action-card.card-landowner:hover::before { background: var(--accent); }
+    .action-card.card-warden:hover::before { background: var(--primary); }
+    .action-card.card-status:hover::before { background: #0284c7; }
+
+    .card-icon {
+      width: 50px;
+      height: 50px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      margin-bottom: 20px;
+    }
+
+    .card-landowner .card-icon { background: #fef3c7; color: var(--accent); }
+    .card-warden .card-icon { background: #d1fae5; color: var(--primary); }
+    .card-status .card-icon { background: #e0f2fe; color: #0284c7; }
+
+    .action-card h3 {
+      font-size: 20px;
+      margin: 0 0 10px;
+      color: var(--primary);
+    }
+
+    .action-card p {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin: 0 0 25px;
+      line-height: 1.5;
+    }
+
+    .btn-action {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 14px;
+      text-decoration: none;
+      transition: all 0.2s;
+      text-align: center;
+    }
+
+    .btn-landowner { background: var(--accent); color: white; }
+    .btn-landowner:hover { background: #b45309; }
+
+    .btn-warden { background: var(--primary); color: white; }
+    .btn-warden:hover { background: var(--primary-dark); }
+
+    .btn-status { background: #0284c7; color: white; }
+    .btn-status:hover { background: #0369a1; }
+
+    /* Statutory Compliance Banner */
+    .compliance-bar {
+      background: #f1f5f9;
+      border-radius: 12px;
+      padding: 25px;
+      margin-top: 40px;
+      border: 1px solid var(--border);
+    }
+
+    .compliance-bar h4 {
+      margin: 0 0 15px;
+      color: var(--primary);
+      font-size: 15px;
+      text-align: center;
+    }
+
+    .compliance-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 15px;
+      text-align: center;
+    }
+
+    .comp-item {
+      background: white;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      color: var(--text-main);
+      border: 1px solid var(--border);
+    }
+
+    .comp-item strong {
+      display: block;
+      color: var(--accent);
+      font-size: 14px;
+    }
+
+    footer {
+      background: var(--primary-dark);
+      color: #94a3b8;
+      text-align: center;
+      padding: 25px 20px;
+      font-size: 13px;
+      border-top: 1px solid rgba(255,255,255,0.05);
+    }
+
+    footer a {
+      color: var(--accent-light);
+      text-decoration: none;
+    }
   </style>
-
 </head>
-
 <body>
 
-  
+  <!-- Header -->
+  <header>
+    <div class="brand">
+      <div class="brand-logo">⛏</div>
+      <div>
+        <h2>Direct Alluvial Portal</h2>
+        <span>PNG Customary Landowner & Warden System</span>
+      </div>
+    </div>
+    <nav>
+      <a href="index.html" class="active">Home</a>
+      <a href="landowner.html">Intake Form</a>
+      <a href="status.html">Track Status</a>
+      <a href="warden.html">Warden Portal</a>
+    </nav>
+  </header>
 
-  <h1>Welcome to the Alluvial Mining Lease Application Portal</h1>
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-content">
+      <span class="hero-tag">Official PNG Alluvial Mining Portal</span>
+      <h1>Empowering Customary Landowners & Mining Wardens</h1>
+      <p>A direct, lightweight portal built specifically for Papua New Guinea clan landowners to register alluvial leases and MRA Mining Wardens to verify village hearing boundaries in real-time.</p>
+      
+      <!-- Interactive Quick Lookup Search -->
+      <div class="hero-search">
+        <input type="text" id="quick-search-input" placeholder="Enter Reference ID or Mobile Number..." />
+        <button onclick="quickSearch()">Track Status</button>
+      </div>
+    </div>
+  </section>
 
+  <!-- Live Stats Section -->
+  <div class="stat-container">
+    <div class="stat-grid">
+      <div class="stat-card">
+        <h3 id="stat-total">--</h3>
+        <p>Total Intake Applications</p>
+      </div>
+      <div class="stat-card">
+        <h3 id="stat-verified" style="color: #059669;">--</h3>
+        <p>Verified Boundaries</p>
+      </div>
+      <div class="stat-card">
+        <h3 id="stat-review" style="color: var(--accent);">--</h3>
+        <p>Under Warden Review</p>
+      </div>
+    </div>
+  </div>
 
+  <!-- Role Quick-Access Cards -->
+  <div class="container">
+    <div class="section-title">
+      <h2>Select Your Portal Desk</h2>
+      <p>Choose an action path below based on your role</p>
+    </div>
 
-  <p class="info">
+    <div class="action-grid">
+      
+      <!-- Card 1: Landowner Intake -->
+      <div class="action-card card-landowner">
+        <div>
+          <div class="card-icon">📋</div>
+          <h3>Landowner Direct Intake</h3>
+          <p>Submit your 5-hectare customary alluvial lease request, upload NID documents, attach clan consent agreements, and provide GPS boundaries.</p>
+        </div>
+        <a href="landowner.html" class="btn-action btn-landowner">Submit Application &rarr;</a>
+      </div>
 
-    This portal allows landowners and administrators to manage applications for mining leases.  
+      <!-- Card 2: Track Status -->
+      <div class="action-card card-status">
+        <div>
+          <div class="card-icon">🔍</div>
+          <h3>Track Application Status</h3>
+          <p>Check the real-time progress of your application, view village field hearing outcomes, and read notes posted directly by the Mining Warden.</p>
+        </div>
+        <a href="status.html" class="btn-action btn-status">Check Progress &rarr;</a>
+      </div>
 
-    Use the links below to navigate to different sections:
+      <!-- Card 3: Warden Portal -->
+      <div class="action-card card-warden">
+        <div>
+          <div class="card-icon">🗺️</div>
+          <h3>Mining Warden Desk</h3>
+          <p>Authorized warden portal to inspect interactive Leaflet GIS boundaries, review customary documents, record hearing notes, and certify leases.</p>
+        </div>
+        <a href="warden.html" class="btn-action btn-warden">Warden Login &rarr;</a>
+      </div>
 
-  </p>
+    </div>
 
-
-
-  <!-- Navigation links -->
-
-  <nav>
-
-    <a href="dashboard.html">Dashboard</a>
-
-    <a href="landowner.html">Landowner Form</a>
-
-    <a href="help.html">Help</a>
-
-  </nav>
-
-
-
-  <!-- Extra information section -->
-
-  <div class="info">
-
-    <h2>About This Portal</h2>
-
-    <p>
-
-      The portal provides a centralized system for tracking applications, reviewing statuses,
-
-      and managing landowner information. It is designed to improve transparency and efficiency
-
-      in the application process.
-
-    </p>
-
-
-
-    <h2>How to Use</h2>
-
-    <ul>
-
-      <li>Go to the <strong>Dashboard</strong> to view application statistics and recent submissions.</li>
-
-      <li>Visit the <strong>Landowner Form</strong> page to submit new landowner details.</li>
-
-      <li>Check the <strong>Help</strong> page for guidance and FAQs.</li>
-
-    </ul>
+    <!-- Statutory Rules Bar -->
+    <div class="compliance-bar">
+      <h4>⚖️ Statutory Alluvial Mining Limits (Mining Act 1992)</h4>
+      <div class="compliance-grid">
+        <div class="comp-item">
+          <strong>Under 5 Hectares</strong>
+          Maximum allowable customary lease size
+        </div>
+        <div class="comp-item">
+          <strong>Under 10m Depth</strong>
+          Strict alluvial surface limit
+        </div>
+        <div class="comp-item">
+          <strong>Chemical Ban</strong>
+          Strict restriction on mercury use
+        </div>
+        <div class="comp-item">
+          <strong>100% PNG Customary</strong>
+          Reserved strictly for customary owners
+        </div>
+      </div>
+    </div>
 
   </div>
 
-</body>
+  <footer>
+    <p>Direct Alluvial Mining Portal &bull; PNG Mining Act 1992 Statutory Compliance Tool</p>
+  </footer>
 
+  <script type="module">
+    import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+
+    const supabaseUrl = 'https://dbppvcfxtbhuuskwyycc.supabase.co';
+    const supabaseKey = "sb_publishable_vWNRqdWRDV8el4eWD0rIFg_nB1PxaUI";
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // Fetch live statistics from Supabase
+    async function loadStats() {
+      try {
+        const { data, error } = await supabase.from('landowner').select('warden_status');
+        if (error || !data) return;
+
+        const total = data.length;
+        const verified = data.filter(d => d.warden_status === 'Verified').length;
+        const review = data.filter(d => d.warden_status === 'Under Review' || !d.warden_status).length;
+
+        document.getElementById('stat-total').textContent = total;
+        document.getElementById('stat-verified').textContent = verified;
+        document.getElementById('stat-review').textContent = review;
+      } catch (err) {
+        console.log("Stats loading error:", err);
+      }
+    }
+
+    // Quick search routing
+    window.quickSearch = function() {
+      const val = document.getElementById('quick-search-input').value.trim();
+      if (val) {
+        window.location.href = `status.html?id=${encodeURIComponent(val)}`;
+      } else {
+        window.location.href = 'status.html';
+      }
+    };
+
+    // Press Enter to quick search
+    document.getElementById('quick-search-input').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') window.quickSearch();
+    });
+
+    loadStats();
+  </script>
+</body>
 </html>
