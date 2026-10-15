@@ -152,7 +152,7 @@
       transform: scale(0.99);
     }
 
-    /* Landowner Direct Link Box */
+    /* Landowner Direct Link Banner */
     .landowner-banner {
       margin-top: 22px;
       padding: 14px;
@@ -221,7 +221,7 @@
     
     <div class="card-header">
       <h2>MRA Warden Portal</h2>
-      <p>Authorized Officer & Warden Administration</p>
+      <p>Authorized Warden Administrative Access</p>
     </div>
 
     <div class="toast-msg" id="toast"></div>
@@ -254,7 +254,7 @@
       </div>
 
       <!-- Main Login Button -->
-      <button type="submit" class="btn-login" id="loginBtn">Login to Warden Dashboard</button>
+      <button type="submit" class="btn-login" id="loginBtn">Login to Warden Portal</button>
 
     </form>
 
@@ -304,24 +304,24 @@
         if (error) throw error;
 
         toast.className = 'toast-msg success';
-        toast.innerText = 'Authentication successful! Redirecting to Warden Dashboard...';
+        toast.innerText = 'Authentication successful! Redirecting to Warden Portal...';
         toast.style.display = 'block';
 
         setTimeout(() => {
-          window.location.href = 'dashboard.html';
-        }, 500);
+          window.location.replace('warden.html');
+        }, 400);
 
       } catch (err) {
-        // Fallback for live demo pitch: Redirect directly to Warden Page
+        // Fallback for live demo pitch: Redirect directly to warden.html
         toast.className = 'toast-msg success';
-        toast.innerText = 'Redirecting to Warden Dashboard...';
+        toast.innerText = 'Redirecting to Warden Portal...';
         toast.style.display = 'block';
 
         setTimeout(() => {
-          window.location.href = 'dashboard.html';
-        }, 500);
+          window.location.replace('warden.html');
+        }, 400);
       } finally {
-        loginBtn.innerText = 'Login to Warden Dashboard';
+        loginBtn.innerText = 'Login to Warden Portal';
         loginBtn.disabled = false;
       }
     };
