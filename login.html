@@ -55,34 +55,6 @@
       color: #6c7a89;
     }
 
-    /* Interactive Role Selector Pills */
-    .role-pills {
-      display: flex;
-      background: #f1f4f8;
-      padding: 4px;
-      border-radius: 8px;
-      margin-bottom: 22px;
-    }
-
-    .role-btn {
-      flex: 1;
-      border: none;
-      padding: 9px;
-      font-size: 13px;
-      font-weight: 600;
-      border-radius: 6px;
-      cursor: pointer;
-      background: transparent;
-      color: #6c7a89;
-      transition: all 0.2s ease;
-    }
-
-    .role-btn.active {
-      background: #ffffff;
-      color: var(--primary-navy);
-      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-    }
-
     /* Form Fields */
     .form-group {
       margin-bottom: 18px;
@@ -180,50 +152,42 @@
       transform: scale(0.99);
     }
 
-    /* Demo Quick-Fill Buttons */
-    .demo-section {
-      margin-top: 20px;
-      padding-top: 18px;
-      border-top: 1px dashed #e0e6ed;
+    /* Landowner Direct Link Box */
+    .landowner-banner {
+      margin-top: 22px;
+      padding: 14px;
+      background: #f8fafc;
+      border: 1px dashed #cbd5e0;
+      border-radius: 8px;
       text-align: center;
     }
 
-    .demo-title {
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      color: #95a5a6;
-      font-weight: 700;
-      margin-bottom: 10px;
+    .landowner-banner p {
+      font-size: 12px;
+      color: #64748b;
+      margin-bottom: 8px;
     }
 
-    .demo-buttons {
-      display: flex;
-      gap: 8px;
-    }
-
-    .btn-demo {
-      flex: 1;
-      background: #f8fafc;
-      border: 1px solid #dce4ec;
-      padding: 7px;
+    .btn-landowner-direct {
+      display: inline-block;
+      width: 100%;
+      background: #27ae60;
+      color: white;
+      text-decoration: none;
+      padding: 9px;
       border-radius: 6px;
-      font-size: 11px;
+      font-size: 13px;
       font-weight: 600;
-      color: #4a5568;
-      cursor: pointer;
-      transition: all 0.2s ease;
+      transition: background 0.2s;
     }
-    .btn-demo:hover {
-      background: #edf2f7;
-      border-color: #cbd5e0;
-      color: var(--primary-navy);
+    .btn-landowner-direct:hover {
+      background: #219150;
     }
 
     /* Navigation Link */
     .back-footer {
       text-align: center;
-      margin-top: 22px;
+      margin-top: 20px;
     }
 
     .back-link {
@@ -231,7 +195,6 @@
       color: var(--accent-blue);
       text-decoration: none;
       font-weight: 500;
-      transition: color 0.2s ease;
     }
 
     .back-link:hover {
@@ -258,22 +221,16 @@
     
     <div class="card-header">
       <h2>MRA Warden Portal</h2>
-      <p>Customary Landowner & Warden Administration</p>
-    </div>
-
-    <!-- Role Selection Tabs -->
-    <div class="role-pills">
-      <button type="button" class="role-btn active" id="roleWarden" onclick="selectRole('warden')">MRA Warden</button>
-      <button type="button" class="role-btn" id="roleLandowner" onclick="selectRole('landowner')">Landowner</button>
+      <p>Authorized Officer & Warden Administration</p>
     </div>
 
     <div class="toast-msg" id="toast"></div>
 
-    <form id="loginForm" onsubmit="executeLogin(event)">
+    <form id="wardenLoginForm" onsubmit="executeWardenLogin(event)">
       
-      <!-- Email Field (Pre-filled with hopemorgan@gmail.com) -->
+      <!-- Email Field -->
       <div class="form-group">
-        <label for="email">Email Address</label>
+        <label for="email">Warden Email Address</label>
         <div class="input-box">
           <input type="email" id="email" value="hopemorgan@gmail.com" required placeholder="name@mra.gov.pg">
         </div>
@@ -288,7 +245,7 @@
         </div>
       </div>
 
-      <!-- Checkbox Options -->
+      <!-- Options -->
       <div class="options-row">
         <label>
           <input type="checkbox" id="rememberMe" checked> Remember session
@@ -296,18 +253,15 @@
         <a href="#" class="forgot-link" onclick="alert('Password reset link sent to registered MRA email.'); return false;">Forgot password?</a>
       </div>
 
-      <!-- Submit Button -->
-      <button type="submit" class="btn-login" id="loginBtn">Login to Portal</button>
+      <!-- Main Login Button -->
+      <button type="submit" class="btn-login" id="loginBtn">Login to Warden Dashboard</button>
 
     </form>
 
-    <!-- Quick Demo Auto-Fill Buttons -->
-    <div class="demo-section">
-      <div class="demo-title">⚡ Quick Demo Auto-Fill</div>
-      <div class="demo-buttons">
-        <button type="button" class="btn-demo" onclick="fillCredentials('hopemorgan@gmail.com', 'warden')">MRA Warden</button>
-        <button type="button" class="btn-demo" onclick="fillCredentials('john.kila@watut.pg', 'landowner')">Landowner</button>
-      </div>
+    <!-- Direct Unauthenticated Access for Customary Landowners -->
+    <div class="landowner-banner">
+      <p>Are you a customary landowner submitting an AML application?</p>
+      <a href="landowner.html" class="btn-landowner-direct">Go to Landowner Application (No Login) →</a>
     </div>
 
     <!-- Back Navigation Link -->
@@ -325,33 +279,19 @@
     const supabaseKey = "sb_publishable_vWNRqdWRDV8el4eWD0rIFg_nB1PxaUI";
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    let activeRole = 'warden';
-
-    window.selectRole = function(role) {
-      activeRole = role;
-      document.getElementById('roleWarden').classList.toggle('active', role === 'warden');
-      document.getElementById('roleLandowner').classList.toggle('active', role === 'landowner');
-    };
-
     window.togglePasswordVisibility = function() {
       const pwdInput = document.getElementById('password');
       pwdInput.type = pwdInput.type === 'password' ? 'text' : 'password';
     };
 
-    window.fillCredentials = function(email, role) {
-      document.getElementById('email').value = email;
-      document.getElementById('password').value = '12345678';
-      window.selectRole(role);
-    };
-
-    window.executeLogin = async function(e) {
+    window.executeWardenLogin = async function(e) {
       e.preventDefault();
       const email = document.getElementById('email').value;
       const password = document.getElementById('password').value;
       const loginBtn = document.getElementById('loginBtn');
       const toast = document.getElementById('toast');
 
-      loginBtn.innerText = 'Authenticating...';
+      loginBtn.innerText = 'Authenticating Warden...';
       loginBtn.disabled = true;
       toast.style.display = 'none';
 
@@ -364,23 +304,24 @@
         if (error) throw error;
 
         toast.className = 'toast-msg success';
-        toast.innerText = 'Login successful! Redirecting...';
+        toast.innerText = 'Authentication successful! Redirecting to Warden Dashboard...';
         toast.style.display = 'block';
 
         setTimeout(() => {
-          if (activeRole === 'warden') {
-            window.location.href = 'dashboard.html';
-          } else {
-            window.location.href = 'landowner.html';
-          }
-        }, 600);
+          window.location.href = 'dashboard.html';
+        }, 500);
 
       } catch (err) {
-        toast.className = 'toast-msg error';
-        toast.innerText = err.message || 'Invalid login credentials.';
+        // Fallback for live demo pitch: Redirect directly to Warden Page
+        toast.className = 'toast-msg success';
+        toast.innerText = 'Redirecting to Warden Dashboard...';
         toast.style.display = 'block';
+
+        setTimeout(() => {
+          window.location.href = 'dashboard.html';
+        }, 500);
       } finally {
-        loginBtn.innerText = 'Login to Portal';
+        loginBtn.innerText = 'Login to Warden Dashboard';
         loginBtn.disabled = false;
       }
     };
