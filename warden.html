@@ -3,28 +3,45 @@
 <head>
   <meta charset="UTF-8">
   <title>MRA Mining Warden Portal & GIS Verification</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    body { font-family: Arial, sans-serif; margin: 20px; background-color: #f9f9f9; }
+    body { font-family: Arial, sans-serif; margin: 20px; background-color: #f9f9f9; color: #333; }
     h1, h2 { color: #003366; }
-    nav { margin-bottom: 20px; background: #003366; padding: 10px; border-radius: 4px; }
-    nav a { color: #fff; text-decoration: none; margin-right: 15px; font-weight: bold; }
-    table { width: 100%; border-collapse: collapse; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    nav { margin-bottom: 20px; background: #003366; padding: 12px 20px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; }
+    nav a { color: #fff; text-decoration: none; margin-right: 15px; font-weight: bold; font-size: 14px; }
+    nav a:hover { color: #f0ad4e; }
+    
+    table { width: 100%; border-collapse: collapse; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-top: 10px; }
     th, td { border: 1px solid #ddd; padding: 10px; text-align: left; font-size: 13px; }
-    th { background: #f0f4f8; color: #333; }
-    .btn-pdf { background-color: #d9534f; color: white; border: none; padding: 6px 10px; cursor: pointer; border-radius: 3px; font-weight: bold; font-size: 12px; }
-    .btn-map { background-color: #0275d8; color: white; border: none; padding: 6px 10px; cursor: pointer; border-radius: 3px; font-weight: bold; font-size: 12px; margin-right: 5px; }
+    th { background: #f0f4f8; color: #003366; font-weight: bold; }
+    
+    .btn-pdf { background-color: #d9534f; color: white; border: none; padding: 6px 10px; cursor: pointer; border-radius: 3px; font-weight: bold; font-size: 11px; }
+    .btn-map { background-color: #0275d8; color: white; border: none; padding: 6px 10px; cursor: pointer; border-radius: 3px; font-weight: bold; font-size: 11px; margin-right: 4px; }
+    .btn-docs { background-color: #6c757d; color: white; border: none; padding: 6px 10px; cursor: pointer; border-radius: 3px; font-weight: bold; font-size: 11px; margin-right: 4px; }
+    
     .status-badge { padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; display: inline-block; }
     .status-pending { background: #f0ad4e; color: white; }
     .status-verified { background: #5cb85c; color: white; }
+    .status-disputed { background: #d9534f; color: white; }
     
-    /* Modal styles for GIS Map Viewer */
-    #map-modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); }
-    .modal-content { background: white; margin: 3% auto; padding: 20px; width: 85%; max-width: 800px;max-height: 90vh; overflow-y: auto; border-radius: 6px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); position: relative; }
+    /* Modal styles for GIS Map Viewer & Document Inspection */
+    .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); }
+    .modal-content { background: white; margin: 2% auto; padding: 20px; width: 85%; max-width: 850px; max-height: 90vh; overflow-y: auto; border-radius: 6px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); position: relative; }
     .close-btn { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; }
     .close-btn:hover { color: black; }
-    #warden-map { height: 400px; width: 100%; margin-top: 15px; border-radius: 4px; border: 1px solid #ccc; }
-    .btn-verify { background-color: #5cb85c; color: white; border: none; padding: 12px 20px; font-size: 14px; font-weight: bold; cursor: pointer; border-radius: 4px; margin-top: 15px; width: 100%; }
+    
+    #warden-map { height: 350px; width: 100%; margin-top: 15px; border-radius: 4px; border: 1px solid #ccc; }
+    
+    .action-group { display: flex; gap: 10px; margin-top: 15px; }
+    .btn-verify { background-color: #5cb85c; color: white; border: none; padding: 12px 20px; font-size: 14px; font-weight: bold; cursor: pointer; border-radius: 4px; flex: 1; }
     .btn-verify:hover { background-color: #4cae4c; }
+    .btn-dispute { background-color: #d9534f; color: white; border: none; padding: 12px 20px; font-size: 14px; font-weight: bold; cursor: pointer; border-radius: 4px; flex: 1; }
+    .btn-dispute:hover { background-color: #c9302c; }
+
+    .doc-link { display: inline-block; margin: 5px 0; padding: 6px 12px; background: #e9ecef; border-radius: 4px; text-decoration: none; color: #003366; font-weight: bold; font-size: 12px; }
+    .doc-link:hover { background: #dee2e6; }
+    
+    textarea { width: 100%; box-sizing: border-box; padding: 8px; border: 1px solid #ccc; border-radius: 4px; margin-top: 8px; font-family: inherit; }
   </style>
 
   <!-- Leaflet CSS & JS for Interactive Maps -->
@@ -36,13 +53,15 @@
 <body>
 
   <nav>
-    <a href="warden.html">MRA Warden Dashboard</a>
-    <a href="landowner.html">Intake Form</a>
+    <div>
+      <a href="warden.html">MRA Warden Dashboard</a>
+      <a href="landowner.html">Intake Form</a>
+    </div>
     <a href="#" id="logout-btn">Logout</a>
   </nav>
 
-  <h1>MRA Mining Warden GIS Verification Portal</h1>
-  <p>Review landowner applications, inspect lease boundaries spatially, and certify MRA compliance.</p>
+  <h1>MRA Mining Warden GIS & Technical Verification Portal</h1>
+  <p>Inspect boundary GPS polygons, review customary clan documentation, record Warden hearing notes, and certify statutory compliance.</p>
 
   <h2>Submitted Applications</h2>
   <table id="warden-table">
@@ -50,8 +69,8 @@
       <tr>
         <th>ID</th>
         <th>Applicant</th>
-        <th>Location</th>
-        <th>Clan & Tribe</th>
+        <th>Location & Clan</th>
+        <th>Mining Method</th>
         <th>GPS Boundary (WKT)</th>
         <th>Status</th>
         <th>Actions</th>
@@ -62,14 +81,33 @@
     </tbody>
   </table>
 
-  <!-- GIS Map Inspection Modal -->
-  <div id="map-modal">
+  <!-- GIS Map Inspection & Verification Modal -->
+  <div id="map-modal" class="modal">
     <div class="modal-content">
       <span class="close-btn" onclick="closeMapModal()">&times;</span>
-      <h3 id="modal-title">Spatial Boundary Verification</h3>
+      <h3 id="modal-title">Spatial & Technical Verification</h3>
       <p id="modal-subtitle" style="font-size: 13px; color: #666;"></p>
+      
       <div id="warden-map"></div>
-      <button id="verify-action-btn" class="btn-verify" onclick="certifyBoundary()">✅ Verify & Certify Boundary</button>
+
+      <div style="margin-top: 15px;">
+        <label style="font-weight: bold; font-size: 13px;">Warden Hearing & Dispute Assessment Notes:</label>
+        <textarea id="warden-notes" rows="3" placeholder="Enter notes regarding customary ownership verification, village hearing outcomes, or boundary disputes..."></textarea>
+      </div>
+
+      <div class="action-group">
+        <button id="verify-action-btn" class="btn-verify" onclick="updateStatus('Verified')">✅ Certify & Approve Boundary</button>
+        <button id="dispute-action-btn" class="btn-dispute" onclick="updateStatus('Hearing/Dispute Flagged')">⚠️ Flag Dispute / Reject</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Documents Review Modal -->
+  <div id="docs-modal" class="modal">
+    <div class="modal-content">
+      <span class="close-btn" onclick="closeDocsModal()">&times;</span>
+      <h3 id="docs-modal-title">Attached Applicant Documents</h3>
+      <div id="docs-container" style="margin-top: 15px;"></div>
     </div>
   </div>
 
@@ -85,7 +123,7 @@
     let mapInstance = null;
     let polygonLayer = null;
 
-    // 🔒 Security check: Restrict to authorized wardens only
+    // Security check: Restrict to authorized wardens only
     async function checkWardenAuth() {
       const { data: { session }, error } = await supabase.auth.getSession();
       if (error || !session) {
@@ -123,7 +161,9 @@
 
       tableBody.innerHTML = data.map(app => {
         const status = app.warden_status || "Under Review";
-        const badgeClass = status === "Verified" ? "status-verified" : "status-pending";
+        let badgeClass = "status-pending";
+        if (status === "Verified") badgeClass = "status-verified";
+        if (status.includes("Dispute") || status.includes("Flagged")) badgeClass = "status-disputed";
 
         let displayWkt = "N/A";
         if (typeof app.gps_boundary === 'string') {
@@ -135,36 +175,37 @@
         return `
           <tr>
             <td><strong>#${app.id}</strong></td>
-            <td>${app.given_names || ""} ${app.family_name || ""}<br/><small>NID: ${app.nid_number || ""}</small></td>
-            <td>${app.province || ""}, ${app.district || ""}<br/><small>${app.village_town || ""}</small></td>
-            <td>${app.clan || "N/A"}<br/><small>(${app.tribe || "N/A"})</small></td>
-            <td style="font-family: monospace; font-size:11px; max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${displayWkt}">
+            <td>${app.given_names || ""} ${app.family_name || ""}<br/><small>NID: ${app.nid_number || "N/A"}</small></td>
+            <td>${app.province || ""}, ${app.district || ""}<br/><small>Clan: ${app.clan || "N/A"}</small></td>
+            <td><small>${app.mining_method || "Manual (Pan & Sluice)"}</small></td>
+            <td style="font-family: monospace; font-size:11px; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${displayWkt}">
               ${displayWkt}
             </td>
             <td><span class="status-badge ${badgeClass}">${status}</span></td>
             <td>
-              <button class="btn-map" data-id="${app.id}">🗺️ Verify Map</button>
+              <button class="btn-map" data-id="${app.id}">🗺️ GIS Map</button>
+              <button class="btn-docs" data-id="${app.id}">📁 Docs</button>
               <button class="btn-pdf" data-id="${app.id}">📄 PDF</button>
             </td>
           </tr>
         `;
       }).join("");
 
-      // Attach button events safely
+      // Attach button click handlers
       document.querySelectorAll(".btn-map").forEach(btn => {
-        btn.addEventListener("click", (e) => {
-          openVerificationMap(e.target.getAttribute("data-id"));
-        });
+        btn.addEventListener("click", (e) => openVerificationMap(e.target.getAttribute("data-id")));
+      });
+
+      document.querySelectorAll(".btn-docs").forEach(btn => {
+        btn.addEventListener("click", (e) => openDocsModal(e.target.getAttribute("data-id")));
       });
 
       document.querySelectorAll(".btn-pdf").forEach(btn => {
-        btn.addEventListener("click", (e) => {
-          generatePDF(e.target.getAttribute("data-id"));
-        });
+        btn.addEventListener("click", (e) => generatePDF(e.target.getAttribute("data-id")));
       });
     }
 
-  // Open Modal and Render Leaflet Map
+    // Open Modal and Render GIS Map
     function openVerificationMap(id) {
       const app = loadedApplications[id];
       if (!app) return;
@@ -172,6 +213,7 @@
       activeAppId = id;
       document.getElementById("map-modal").style.display = "block";
       document.getElementById("modal-title").textContent = `Boundary Verification: #${app.id} - ${app.given_names || ''} ${app.family_name || ''}`;
+      document.getElementById("warden-notes").value = app.warden_notes || "";
 
       let latLngs = [];
       let displayInfo = "N/A";
@@ -195,11 +237,11 @@
           displayInfo = JSON.stringify(boundaryData);
           let coords = boundaryData.coordinates || (boundaryData.geometry && boundaryData.geometry.coordinates);
           if (coords && coords[0]) {
-            latLngs = coords[0].map(pt => [pt[1], pt[0]]); // GeoJSON [lng, lat] to Leaflet [lat, lng]
+            latLngs = coords[0].map(pt => [pt[1], pt[0]]);
           }
         }
 
-        document.getElementById("modal-subtitle").textContent = `Boundary Data: ${displayInfo}`;
+        document.getElementById("modal-subtitle").textContent = `Boundary WKT/GeoJSON: ${displayInfo}`;
 
         setTimeout(() => {
           if (!mapInstance) {
@@ -212,48 +254,63 @@
             mapInstance.invalidateSize();
           }
 
-          if (polygonLayer) {
-            mapInstance.removeLayer(polygonLayer);
-          }
+          if (polygonLayer) mapInstance.removeLayer(polygonLayer);
 
           if (latLngs.length > 0) {
             polygonLayer = L.polygon(latLngs, { color: '#d9534f', fillColor: '#f0ad4e', fillOpacity: 0.5 }).addTo(mapInstance);
             mapInstance.fitBounds(polygonLayer.getBounds());
-          } else {
-            alert("Could not parse coordinates for map rendering.");
           }
         }, 200);
 
       } catch (err) {
         console.error("Mapping error:", err);
-        alert("Mapping Error: " + err.message);
       }
     }
-  
 
-    window.closeMapModal = function() {
-      document.getElementById("map-modal").style.display = "none";
-    };
+    // Modal Document Inspection View
+    function openDocsModal(id) {
+      const app = loadedApplications[id];
+      if (!app) return;
 
-    // Certify / Verify boundary status in Supabase
-    window.certifyBoundary = async function() {
+      const container = document.getElementById("docs-container");
+      document.getElementById("docs-modal-title").textContent = `Attached Documents: #${app.id} (${app.given_names} ${app.family_name})`;
+
+      container.innerHTML = `
+        <p><strong>NID Document:</strong> ${app.nid_document_url ? `<a href="${app.nid_document_url}" target="_blank" class="doc-link">📄 View NID Document</a>` : '<span style="color:red;">Not Uploaded</span>'}</p>
+        <p><strong>Birth Certificate:</strong> ${app.birth_cert_url ? `<a href="${app.birth_cert_url}" target="_blank" class="doc-link">📄 View Birth Certificate</a>` : '<span style="color:gray;">Not Provided</span>'}</p>
+        <p><strong>Statutory Declaration / Clan Consent:</strong> ${app.declaration_url ? `<a href="${app.declaration_url}" target="_blank" class="doc-link">📜 View Statutory Declaration</a>` : '<span style="color:red;">Not Uploaded</span>'}</p>
+      `;
+
+      document.getElementById("docs-modal").style.display = "block";
+    }
+
+    window.closeMapModal = function() { document.getElementById("map-modal").style.display = "none"; };
+    window.closeDocsModal = function() { document.getElementById("docs-modal").style.display = "none"; };
+
+    // Update Application Warden Status in Supabase
+    window.updateStatus = async function(status) {
       if (!activeAppId) return;
+
+      const notes = document.getElementById("warden-notes").value;
 
       const { error } = await supabase
         .from("landowner")
-        .update({ warden_status: "Verified" })
+        .update({ 
+          warden_status: status,
+          warden_notes: notes 
+        })
         .eq("id", activeAppId);
 
       if (error) {
         alert("Failed to update status: " + error.message);
       } else {
-        alert("Boundary successfully verified and certified by MRA Warden!");
+        alert(`Application status successfully updated to: ${status}`);
         closeMapModal();
         loadWardenData();
       }
     };
 
-    // PDF Generator function
+    // PDF Summary Generator
     function generatePDF(id) {
       const app = loadedApplications[id];
       if (!app) return;
@@ -267,33 +324,35 @@
       pdfContainer.innerHTML = `
         <div style="text-align: center; border-bottom: 2px solid #003366; padding-bottom: 10px;">
           <h2 style="color: #003366; margin: 0;">MINERAL RESOURCES AUTHORITY</h2>
-          <h3 style="margin: 5px 0;">Alluvial Mining Lease (AML) Official Application</h3>
-          <p style="font-size: 12px; margin: 0;">Statutory Mining Warden Verification Record</p>
+          <h3 style="margin: 5px 0;">Alluvial Mining Lease (AML) Official Application Report</h3>
+          <p style="font-size: 12px; margin: 0;">Statutory Mining Warden Inspection & Verification Record</p>
         </div>
         
         <br/>
         <p><strong>Application Reference ID:</strong> AML-${app.id}</p>
-        <p><strong>Verification Date:</strong> ${new Date().toLocaleDateString()}</p>
+        <p><strong>Report Date:</strong> ${new Date().toLocaleDateString()}</p>
         
         <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
           <tr><td style="padding: 8px; border: 1px solid #ccc; font-weight: bold; width: 40%;">Applicant Name:</td><td style="padding: 8px; border: 1px solid #ccc;">${app.given_names || ''} ${app.family_name || ''}</td></tr>
           <tr><td style="padding: 8px; border: 1px solid #ccc; font-weight: bold;">National Identity (NID):</td><td style="padding: 8px; border: 1px solid #ccc;">${app.nid_number || 'N/A'}</td></tr>
-          <tr><td style="padding: 8px; border: 1px solid #ccc; font-weight: bold;">Location:</td><td style="padding: 8px; border: 1px solid #ccc;">${app.province || ''} / ${app.district || ''}</td></tr>
+          <tr><td style="padding: 8px; border: 1px solid #ccc; font-weight: bold;">Location:</td><td style="padding: 8px; border: 1px solid #ccc;">${app.province || ''} / ${app.district || ''} (${app.village_town || ''})</td></tr>
           <tr><td style="padding: 8px; border: 1px solid #ccc; font-weight: bold;">Customary Clan:</td><td style="padding: 8px; border: 1px solid #ccc;">${app.clan || 'N/A'}</td></tr>
+          <tr><td style="padding: 8px; border: 1px solid #ccc; font-weight: bold;">Proposed Mining Method:</td><td style="padding: 8px; border: 1px solid #ccc;">${app.mining_method || 'Manual (Pan & Sluice)'}</td></tr>
           <tr><td style="padding: 8px; border: 1px solid #ccc; font-weight: bold;">Verified GPS Boundary:</td><td style="padding: 8px; border: 1px solid #ccc; font-family: monospace; font-size: 11px;">${boundaryText}</td></tr>
+          <tr><td style="padding: 8px; border: 1px solid #ccc; font-weight: bold;">Warden Assessment Notes:</td><td style="padding: 8px; border: 1px solid #ccc;">${app.warden_notes || 'No dispute notes recorded.'}</td></tr>
         </table>
         
         <br/><br/>
         <div style="margin-top: 20px; border-top: 1px dashed #666; padding-top: 10px;">
-          <p><strong>MRA Warden Certification:</strong> <span style="color: green; font-weight: bold;">${app.warden_status || 'Under Review'}</span></p>
+          <p><strong>MRA Warden Final Recommendation:</strong> <span style="color: green; font-weight: bold;">${app.warden_status || 'Under Review'}</span></p>
           <br/><br/>
-          <p>Warden Signature: ___________________________ &nbsp;&nbsp;&nbsp;&nbsp; Date: ______________</p>
+          <p>Mining Warden Signature: ___________________________ &nbsp;&nbsp;&nbsp;&nbsp; Date: ______________</p>
         </div>
       `;
 
       const options = {
         margin:       10,
-        filename:     `AML_Verified_Application_#${app.id}.pdf`,
+        filename:     `AML_Warden_Report_#${app.id}.pdf`,
         image:        { type: 'jpeg', quality: 0.98 },
         html2canvas:  { scale: 2 },
         jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
@@ -309,7 +368,7 @@
       window.location.href = "login.html";
     });
 
-    // Initialize application data on page load
+    // Initialize application data on load
     loadWardenData();
   </script>
 </body>
