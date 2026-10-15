@@ -2,41 +2,89 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Alluvial Mining Lease Portal</title>
+
+  <!-- Leaflet CSS for WKT Spatial Mapping -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
   <style>
-    body { font-family: Arial, sans-serif; margin: 20px; }
+    body { font-family: Arial, sans-serif; margin: 20px; color: #2c3e50; }
     h1 { color: #2c3e50; }
     nav { margin-top: 20px; }
-    nav a {
+    nav a, .btn-primary {
       display: inline-block;
-      margin-right: 20px;
-      padding: 10px 15px;
+      margin-right: 15px;
+      padding: 10px 18px;
       background: #3498db;
       color: white;
       text-decoration: none;
       border-radius: 5px;
+      font-weight: bold;
+      border: none;
+      cursor: pointer;
     }
-    nav a:hover { background: #2980b9; }
-    .info {
-      margin-top: 30px;
-      line-height: 1.6;
+    nav a:hover, .btn-primary:hover { background: #2980b9; }
+    .btn-secondary {
+      background: #7f8c8d;
+      color: white;
+      padding: 10px 18px;
+      border-radius: 5px;
+      border: none;
+      cursor: pointer;
     }
+    .btn-secondary:hover { background: #95a5a6; }
+    .info { margin-top: 30px; line-height: 1.6; }
+
+    /* Modal / Multi-step Form Overlay Styles */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+    .modal-content {
+      background: white;
+      width: 90%;
+      max-width: 650px;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 25px;
+      border-radius: 8px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    }
+    .form-step { display: none; }
+    .form-step.active { display: block; }
+    .form-group { margin-bottom: 15px; }
+    .form-group label { display: block; font-weight: bold; margin-bottom: 5px; }
+    .form-group input, .form-group select {
+      width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;
+    }
+    .form-row { display: flex; gap: 15px; }
+    .form-row .form-group { flex: 1; }
+    .help-text { font-size: 0.85em; color: #7f8c8d; margin-top: 4px; display: block; }
+    .step-indicator { font-size: 0.9em; font-weight: bold; color: #7f8c8d; margin-bottom: 15px; }
+    .modal-buttons { display: flex; justify-content: space-between; margin-top: 20px; }
   </style>
 </head>
 <body>
-  
+
   <h1>Welcome to the Alluvial Mining Lease Application Portal</h1>
 
   <p class="info">
     This portal allows landowners and administrators to manage applications for mining leases.  
-    Use the links below to navigate to different sections:
+    Use the links below to navigate to different sections or initiate an application directly:
   </p>
 
-  <!-- Navigation links -->
+  <!-- Navigation links & Direct Action Button -->
   <nav>
     <a href="dashboard.html">Dashboard</a>
     <a href="landowner.html">Landowner Form</a>
     <a href="help.html">Help</a>
+    <button class="btn-primary" onclick="openModal()">+ Submit AML Application</button>
   </nav>
 
   <!-- Extra information section -->
@@ -45,16 +93,176 @@
     <p>
       The portal provides a centralized system for tracking applications, reviewing statuses,
       and managing landowner information. It is designed to improve transparency and efficiency
-      in the application process.
+      in the application process under the PNG Mining Act 1992 (Form 5 & Form 8/17).
     </p>
 
     <h2>How to Use</h2>
     <ul>
       <li>Go to the <strong>Dashboard</strong> to view application statistics and recent submissions.</li>
-      <li>Visit the <strong>Landowner Form</strong> page to submit new landowner details.</li>
+      <li>Visit the <strong>Landowner Form</strong> page or click <strong>+ Submit AML Application</strong> to initiate an application online.</li>
       <li>Check the <strong>Help</strong> page for guidance and FAQs.</li>
     </ul>
   </div>
+
+  <!-- PHASE 2: MULTI-STEP STATUTORY APPLICATION MODAL -->
+  <div class="modal-overlay" id="applicationModal">
+    <div class="modal-content">
+      <div class="step-indicator" id="stepIndicator">Step 1 of 4: Customary Identification</div>
+
+      <form id="amlForm" onsubmit="submitApplication(event)">
+
+        <!-- STEP 1: Landowner & Customary Identification -->
+        <div class="form-step active" id="step-1">
+          <h3>1. Landowner & Customary Identification</h3>
+          
+          <div class="form-group">
+            <label for="applicant_name">Full Applicant Name / Clan Leader *</label>
+            <input type="text" id="applicant_name" required placeholder="e.g., John Kila">
+          </div>
+
+          <div class="form-group">
+            <label for="nid_number">National ID (NID) / Birth Certificate # *</label>
+            <input type="text" id="nid_number" required placeholder="e.g., NID-10029481">
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="clan_name">Clan Name *</label>
+              <input type="text" id="clan_name" required placeholder="e.g., Yagaria Clan">
+            </div>
+            <div class="form-group">
+              <label for="tribe_name">Tribe Name</label>
+              <input type="text" id="tribe_name" placeholder="e.g., Bena Tribe">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="ilg_registration_number">ILG Registration Number (if applicable)</label>
+            <input type="text" id="ilg_registration_number" placeholder="e.g., ILG-7482">
+          </div>
+        </div>
+
+        <!-- STEP 2: Location, Jurisdiction & WKT Geometry -->
+        <div class="form-step" id="step-2">
+          <h3>2. Location & Administrative Jurisdiction</h3>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="province">Province *</label>
+              <input type="text" id="province" required placeholder="e.g., Morobe">
+            </div>
+            <div class="form-group">
+              <label for="district">District</label>
+              <input type="text" id="district" placeholder="e.g., Bulolo">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="llg_area">LLG Area</label>
+              <input type="text" id="llg_area" placeholder="e.g., Watut Rural">
+            </div>
+            <div class="form-group">
+              <label for="ward_number">Ward # / Name</label>
+              <input type="text" id="ward_number" placeholder="e.g., Ward 04">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="depth_limit_meters">Statutory Depth Limit (Meters)</label>
+            <input type="number" id="depth_limit_meters" value="10.0" step="0.5" readonly>
+            <small class="help-text">Standard maximum statutory limit for AML under Sec 48 is 10.0m.</small>
+          </div>
+
+          <div class="form-group">
+            <label for="proposed_warden_hearing_location">Nominated Warden Hearing Location *</label>
+            <input type="text" id="proposed_warden_hearing_location" required placeholder="e.g., Wau Council Chamber / Village Square">
+          </div>
+
+          <div class="form-group">
+            <label>Boundary Plot (WKT Spatial Polygon)</label>
+            <div id="map" style="height: 200px; border-radius: 6px; background: #eee;"></div>
+            <input type="hidden" id="wkt_geometry">
+          </div>
+        </div>
+
+        <!-- STEP 3: Mining Method & Proposed Operations -->
+        <div class="form-step" id="step-3">
+          <h3>3. Proposed Mining Operations</h3>
+
+          <div class="form-group">
+            <label for="mining_method">Mining Method / Equipment *</label>
+            <select id="mining_method" required>
+              <option value="">-- Select Mining Method --</option>
+              <option value="Un-mechanized (Hand Panning/Sluice Box)">Un-mechanized (Hand Panning & Sluice Box)</option>
+              <option value="Semi-mechanized (Water Pump & Sluice)">Semi-mechanized (Portable Water Pump & Sluice)</option>
+              <option value="Mechanized (Small Excavator)">Mechanized (Small Excavator / Trommel)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="target_minerals">Target Minerals</label>
+            <input type="text" id="target_minerals" value="Gold and Silver" readonly>
+          </div>
+        </div>
+
+        <!-- STEP 4: Financial Reconciliation -->
+        <div class="form-step" id="step-4">
+          <h3>4. Financial Reconciliation</h3>
+
+          <div class="form-group">
+            <label for="payment_receipt_number">Bank Deposit Receipt Reference # *</label>
+            <input type="text" id="payment_receipt_number" required placeholder="e.g., BSP-89201472">
+            <small class="help-text">Enter the transaction receipt reference from MRA lodgment payment.</small>
+          </div>
+        </div>
+
+        <!-- Modal Controls -->
+        <div class="modal-buttons">
+          <button type="button" class="btn-secondary" id="prevBtn" onclick="changeStep(-1)" style="display: none;">Previous</button>
+          <button type="button" class="btn-secondary" onclick="closeModal()">Cancel</button>
+          <button type="button" class="btn-primary" id="nextBtn" onclick="changeStep(1)">Next Step</button>
+          <button type="submit" class="btn-primary" id="submitBtn" style="display: none;">Submit Application</button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+  <!-- Leaflet Map JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <!-- Multi-Step Navigation & Modal Script -->
+  <script>
+    let currentStep = 1;
+
+    function openModal() {
+      document.getElementById('applicationModal').style.display = 'flex';
+      showStep(currentStep);
+    }
+
+    function closeModal() {
+      document.getElementById('applicationModal').style.display = 'none';
+    }
+
+    function showStep(step) {
+      document.querySelectorAll('.form-step').forEach((el, idx) => {
+        el.classList.toggle('active', idx === (step - 1));
+      });
+
+      document.getElementById('stepIndicator').innerText = `Step ${step} of 4`;
+      document.getElementById('prevBtn').style.display = step === 1 ? 'none' : 'inline-block';
+      document.getElementById('nextBtn').style.display = step === 4 ? 'none' : 'inline-block';
+      document.getElementById('submitBtn').style.display = step === 4 ? 'inline-block' : 'none';
+    }
+
+    function changeStep(delta) {
+      currentStep += delta;
+      if (currentStep < 1) currentStep = 1;
+      if (currentStep > 4) currentStep = 4;
+      showStep(currentStep);
+    }
+  </script>
+
 </body>
 </html>
-
